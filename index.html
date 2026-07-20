@@ -202,9 +202,17 @@ a{color:inherit}
   font-size:13px; color:var(--ink-2); text-align:left;
 }
 
+/* Top-bar tagline: names the product category so the tool is never ambiguous.
+   Hidden once a report loads, where the chat context takes the space. */
+.tagline{
+  font-size:12.5px; color:var(--ink-3); white-space:nowrap;
+  padding-left:11px; margin-left:3px; border-left:1px solid var(--line-2);
+}
+@media (max-width:720px){.tagline{display:none}}
+
 /* Feature strip */
 .feats{
-  max-width:1080px; margin:80px auto 0; padding:36px 24px 72px;
+  max-width:1080px; margin:80px auto 0; padding:36px 24px 40px;
   border-top:1px solid var(--line);
   display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:32px;
 }
@@ -216,6 +224,45 @@ a{color:inherit}
   width:26px; height:26px; border-radius:var(--r-sm); background:var(--inset);
   display:grid; place-items:center; color:var(--ink-2); margin-bottom:11px;
 }
+
+/* How-to strip */
+.howto{max-width:1080px; margin:0 auto; padding:0 24px}
+.howto-in{
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--r);
+  padding:22px 24px; box-shadow:var(--sh-1);
+}
+.howto-in h3{font-size:13.5px; margin-bottom:14px}
+.steps{list-style:none; margin:0 0 14px; padding:0; display:grid;
+       grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px}
+@media (max-width:760px){.steps{grid-template-columns:1fr; gap:11px}}
+.steps li{display:flex; align-items:flex-start; gap:10px; font-size:13px;
+          color:var(--ink-2); line-height:1.55}
+.steps .n{
+  flex:none; width:19px; height:19px; border-radius:50%; background:var(--inset);
+  color:var(--ink-2); font:600 10.5px/19px var(--mono); text-align:center; margin-top:1px;
+}
+.steps b{color:var(--ink); font-weight:600}
+.steps code{
+  font:400 11.5px var(--mono); background:var(--inset); color:var(--ink-2);
+  padding:1px 5px; border-radius:3px;
+}
+.howto-note{
+  font-size:12.5px; line-height:1.6; color:var(--ink-3);
+  border-top:1px solid var(--line); padding-top:13px;
+}
+.howto-note b{color:var(--ink-2); font-weight:600}
+
+/* Footer */
+.foot{
+  max-width:1080px; margin:0 auto; padding:34px 24px 56px;
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  font-size:12px; color:var(--ink-3);
+}
+.foot a{color:var(--ink-2); text-decoration:underline;
+        text-underline-offset:3px; text-decoration-color:var(--line-2)}
+.foot a:hover{color:var(--ink)}
+.foot-sep{color:var(--line-2)}
+@media (max-width:560px){.foot-sep{display:none} .foot{flex-direction:column; align-items:flex-start; gap:6px}}
 
 /* =========== PROGRESS =========== */
 #progress{display:none; min-height:calc(100vh - var(--topbar)); place-items:center; padding:24px}
@@ -448,6 +495,7 @@ table a:hover{text-decoration:underline}
     </svg>
     Quorum
   </a>
+  <span class="tagline" id="tb-tag">WhatsApp group analytics</span>
 
   <div class="div" id="tb-div" hidden></div>
   <div class="ctx" id="tb-ctx" hidden>
@@ -469,11 +517,11 @@ table a:hover{text-decoration:underline}
 <div id="intake">
   <div class="hero">
     <span class="pill-tag"><i></i>Runs entirely in your browser</span>
-    <h1>Understand what's really happening in your group chat.</h1>
+    <h1>Understand what's really happening in your WhatsApp groups.</h1>
     <p class="lede">
-      Quorum reads a WhatsApp export and reports the links being shared, the
-      tools people actually use, who is building what, and the questions that
-      never got answered.
+      Export a WhatsApp group, drop the file in, and Quorum reports the links
+      being shared, the tools people actually use, who is building what, and
+      the questions that never got answered.
     </p>
   </div>
 
@@ -541,6 +589,31 @@ table a:hover{text-decoration:underline}
       <p>The gaps a busy group left open, surfaced instead of buried.</p>
     </div>
   </div>
+
+  <div class="howto">
+    <div class="howto-in">
+      <h3>Getting your export from WhatsApp</h3>
+      <ol class="steps">
+        <li><span class="n">1</span>Open the group in WhatsApp and tap the group name.</li>
+        <li><span class="n">2</span>Choose <b>Export Chat</b>, then <b>Without Media</b>.</li>
+        <li><span class="n">3</span>Save the <code>.txt</code> or <code>.zip</code> and drop it above.</li>
+      </ol>
+      <p class="howto-note">
+        Pick <b>Without Media</b>. WhatsApp caps exports at roughly 40,000
+        messages without media but only about 10,000 with it, counting back from
+        the most recent &mdash; so a with-media export can quietly drop most of
+        your history.
+      </p>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <span>Quorum analyses WhatsApp exports in your browser. Nothing is uploaded.</span>
+    <span class="foot-sep">&middot;</span>
+    <span>Not affiliated with or endorsed by WhatsApp or Meta.</span>
+    <span class="foot-sep">&middot;</span>
+    <a href="https://github.com/myrondoesnotcode/whatsapp" target="_blank" rel="noopener noreferrer">Source</a>
+  </footer>
 </div>
 
 <input type="file" id="file" accept=".txt,.zip,text/plain,application/zip" hidden>
@@ -1445,7 +1518,8 @@ async function run(text,name){
     $("#tb-meta").textContent=nf(S.overview.total)+" messages \u00B7 "+
       S.overview.participants+" people \u00B7 "+fmtD(S.overview.first)+
       " \u2013 "+fmtD(S.overview.last);
-    $("#tb-ctx").hidden=false; $("#tb-div").hidden=false; $("#reset").hidden=false;
+    $("#tb-ctx").hidden=false; $("#tb-div").hidden=false;
+    $("#reset").hidden=false; $("#tb-tag").hidden=true;
     let lastGrp=null;
     $("#nav").innerHTML=SECTIONS.map((s,i)=>{
       const head = s.grp!==lastGrp ? '<div class="grp">'+esc(s.grp)+'</div>' : '';
@@ -1495,7 +1569,8 @@ fileInput.addEventListener("change",e=>handleFile(e.target.files[0]));
 
 $("#reset").addEventListener("click",()=>{
   app.classList.remove("on"); intake.style.display="";
-  $("#tb-ctx").hidden=true; $("#tb-div").hidden=true; $("#reset").hidden=true;
+  $("#tb-ctx").hidden=true; $("#tb-div").hidden=true;
+  $("#reset").hidden=true; $("#tb-tag").hidden=false;
   errBox.hidden=true; fileInput.value=""; window.scrollTo(0,0);
 });
 
