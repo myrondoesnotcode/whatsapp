@@ -1,0 +1,18 @@
+# Never commit chat data. This repo is public; WhatsApp exports and the reports
+# generated from them contain real messages from real people.
+*.txt
+*.zip
+inbox/
+output/
+_chat*
+WhatsApp*
+*.html.bak
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# macOS
+.DS_Store
