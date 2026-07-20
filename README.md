@@ -1,11 +1,11 @@
-# Quorum
+# Tzippy
 
-**WhatsApp group analytics that runs entirely in your browser.**
+**A WhatsApp analyzer that runs entirely in your browser.**
 
 Drop in a WhatsApp export and get the links being shared, the tools people
 actually use, who is building what, and the questions that never got answered.
 
-→ **[Open Quorum](https://myrondoesnotcode.github.io/whatsapp/)**
+→ **[Open Tzippy](https://myrondoesnotcode.github.io/whatsapp/)**
 
 Not affiliated with or endorsed by WhatsApp or Meta. This reads export files you
 produce yourself.
@@ -14,12 +14,12 @@ produce yourself.
 
 ## Nothing is uploaded
 
-Quorum is a static page with no backend. Your chat file is read and analysed
+Tzippy is a static page with no backend. Your chat file is read and analyzed
 **inside your browser tab** — there is no server to send it to. Load the page
 once, disconnect from the internet, and it still works.
 
 That isn't a policy promise, it's a property of how it's built: the entire
-analyser is JavaScript in `index.html`.
+analyzer is JavaScript in `index.html`.
 
 ## What it reports
 
