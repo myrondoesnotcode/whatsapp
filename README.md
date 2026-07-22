@@ -21,6 +21,28 @@ once, disconnect from the internet, and it still works.
 That isn't a policy promise, it's a property of how it's built: the entire
 analyzer is JavaScript in `index.html`.
 
+## Share a card, still without a backend
+
+Every report has a **Share** button. It builds a compact highlights card you can
+post anywhere:
+
+- **A link anyone can open.** The card's numbers are compressed and packed into
+  the link itself (the `#card=…` fragment), so nothing is uploaded — the same
+  property as the analysis. A URL fragment never leaves the browser, and because
+  the whole card travels *inside* the link, one link works for any number of
+  people at once with nothing to host.
+- **An image for social.** A 1200×630 card (title, headline stats, a sparkline,
+  top tools) you can download and drop into a post.
+
+The card carries **aggregate figures only by default** — no individual names.
+A per-card toggle adds a top-members leaderboard when you want it, with a clear
+warning that it publishes real names. Opening a shared link shows a clean
+standalone page with a *Analyze your own chat* prompt back to Tzippy.
+
+Nothing about sharing changes the privacy story: the recipient's browser decodes
+the link locally, and the original chat is never part of it — only the figures on
+the card.
+
 ## What it reports
 
 | Section | What's in it |

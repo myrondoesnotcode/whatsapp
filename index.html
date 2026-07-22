@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Tzippy &mdash; WhatsApp analyzer</title>
 
 <style>
@@ -481,6 +482,122 @@ table a:hover{text-decoration:underline}
 }
 .warn b{color:var(--ink)}
 .warn ul{margin:6px 0 0; padding-left:18px}
+
+/* =========== SHARE MODAL =========== */
+.modal-back{
+  position:fixed; inset:0; z-index:100; display:none;
+  align-items:flex-start; justify-content:center; padding:5vh 16px 16px;
+  background:color-mix(in srgb,var(--ink) 42%,transparent);
+  backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); overflow:auto;
+}
+.modal-back.on{display:flex}
+.modal{
+  width:100%; max-width:560px; background:var(--bg);
+  border:1px solid var(--line-2); border-radius:12px; box-shadow:var(--sh-3,0 24px 64px rgba(0,0,0,.28));
+  overflow:hidden; animation:pop .16s ease;
+}
+@keyframes pop{from{opacity:0; transform:translateY(8px) scale(.99)}to{opacity:1; transform:none}}
+.modal-head{
+  display:flex; align-items:center; gap:12px; padding:16px 18px; border-bottom:1px solid var(--line);
+}
+.modal-head h3{font-size:15px; font-weight:600; letter-spacing:-.01em; margin:0}
+.modal-head .sub{font-size:12.5px; color:var(--ink-2); margin:2px 0 0}
+.modal-head .x{
+  margin-left:auto; flex:none; width:30px; height:30px; border-radius:var(--r-sm);
+  border:0; background:transparent; color:var(--ink-3); cursor:pointer; font-size:19px; line-height:1;
+}
+.modal-head .x:hover{background:var(--inset); color:var(--ink)}
+.modal-body{padding:16px 18px; display:flex; flex-direction:column; gap:14px}
+
+/* Live preview of the card */
+.share-prev{
+  border:1px solid var(--line); border-radius:var(--r); overflow:hidden;
+  background:var(--inset);
+}
+.share-prev canvas{display:block; width:100%; height:auto}
+
+.share-opts{display:flex; flex-direction:column; gap:12px}
+.field label{display:block; font-size:12px; font-weight:600; color:var(--ink-2); margin-bottom:5px}
+.field input[type=text]{
+  width:100%; height:34px; padding:0 11px; border:1px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--panel); color:var(--ink); font:400 13px var(--sans);
+}
+.field input:focus{outline:none; border-color:var(--brand)}
+
+.switch{display:flex; align-items:flex-start; gap:11px; cursor:pointer; user-select:none}
+.switch input{position:absolute; opacity:0; width:0; height:0}
+.switch .track{
+  flex:none; margin-top:1px; width:38px; height:22px; border-radius:11px; background:var(--line-2);
+  position:relative; transition:background .15s ease;
+}
+.switch .track::after{
+  content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%;
+  background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .15s ease;
+}
+.switch input:checked+.track{background:var(--brand)}
+.switch input:checked+.track::after{transform:translateX(16px)}
+.switch input:focus-visible+.track{outline:2px solid var(--brand); outline-offset:2px}
+.switch .txt{font-size:13px; line-height:1.4}
+.switch .txt b{font-weight:600}
+.switch .txt span{display:block; color:var(--ink-3); font-size:12px; margin-top:1px}
+
+.priv-note{
+  display:flex; gap:9px; padding:10px 12px; border-radius:var(--r-sm);
+  background:var(--brand-soft); border:1px solid color-mix(in srgb,var(--brand) 22%,transparent);
+  font-size:12px; line-height:1.5; color:var(--ink-2);
+}
+.priv-note.warn-tone{
+  background:color-mix(in srgb,var(--s4) 12%,transparent);
+  border-color:color-mix(in srgb,var(--s4) 34%,transparent);
+}
+.priv-note svg{flex:none; margin-top:1px; color:var(--brand)}
+.priv-note.warn-tone svg{color:var(--s4)}
+
+.share-actions{display:flex; gap:9px; flex-wrap:wrap; padding-top:2px}
+.share-actions .btn{flex:1 1 auto; min-width:130px}
+
+.linkrow{display:flex; gap:8px; align-items:center}
+.linkrow input{
+  flex:1 1 auto; min-width:0; height:34px; padding:0 11px; border:1px solid var(--line);
+  border-radius:var(--r-sm); background:var(--inset); color:var(--ink-2);
+  font:400 12px var(--mono); text-overflow:ellipsis;
+}
+
+/* =========== SHARED CARD VIEW (opened from a link) =========== */
+#share-view{display:none; min-height:100vh; padding:44px 20px 64px}
+#share-view.on{display:block}
+.sv-wrap{max-width:660px; margin:0 auto}
+.sv-mark{display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:22px}
+.sv-card{
+  background:var(--panel); border:1px solid var(--line-2); border-radius:16px;
+  box-shadow:var(--sh-2,0 12px 40px rgba(0,0,0,.12)); overflow:hidden;
+}
+.sv-hero{padding:30px 30px 22px; border-bottom:1px solid var(--line)}
+.sv-eyebrow{font:600 11px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--brand)}
+.sv-title{font-size:26px; font-weight:600; letter-spacing:-.03em; margin:10px 0 6px; line-height:1.15; word-break:break-word}
+.sv-range{font-size:13px; color:var(--ink-2)}
+.sv-body{padding:24px 30px 28px}
+.sv-stats{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:12px 10px; margin-bottom:22px;
+}
+@media (max-width:560px){.sv-stats{grid-template-columns:repeat(2,1fr)}}
+.sv-stat .v{font-size:27px; font-weight:600; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1}
+.sv-stat .l{font-size:12px; color:var(--ink-2); margin-top:5px}
+.sv-block{margin-top:20px}
+.sv-block h4{font:600 11px/1 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0 0 11px}
+.sv-spark{width:100%; height:74px; display:block}
+.sv-lead{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line)}
+.sv-lead:first-of-type{border-top:0}
+.sv-lead .rk{flex:none; width:20px; font:600 12px var(--mono); color:var(--ink-3)}
+.sv-lead .nm{flex:1 1 auto; min-width:0; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.sv-lead .val{flex:none; font:600 13px var(--mono); color:var(--ink-2)}
+.sv-foot{
+  display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  padding:18px 30px; background:var(--inset); border-top:1px solid var(--line);
+}
+.sv-foot .made{font-size:12.5px; color:var(--ink-3)}
+.sv-foot .made b{color:var(--ink-2); font-weight:600}
+.sv-disclaim{text-align:center; font-size:11.5px; color:var(--ink-3); margin-top:20px; line-height:1.5}
 </style>
 
 
@@ -505,6 +622,14 @@ table a:hover{text-decoration:underline}
 
   <span class="sp"></span>
   <div class="acts">
+    <button class="btn btn-ghost" id="share" hidden>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+           stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="3.5" r="1.8"/><circle cx="4" cy="8" r="1.8"/><circle cx="12" cy="12.5" r="1.8"/>
+        <path d="M5.6 7.1l4.8-2.7M5.6 8.9l4.8 2.7"/>
+      </svg>
+      Share
+    </button>
     <button class="btn btn-bare" id="reset" hidden>New analysis</button>
     <a class="btn btn-bare" id="gh" href="https://github.com/myrondoesnotcode/whatsapp"
        target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -634,6 +759,78 @@ table a:hover{text-decoration:underline}
   <div class="shell">
     <nav class="sidenav" id="nav" aria-label="Report sections"></nav>
     <main id="main"></main>
+  </div>
+</div>
+
+
+<!-- ================= SHARE VIEW (rendered from a link) ================= -->
+<div id="share-view">
+  <div class="sv-wrap">
+    <a class="mark sv-mark" href="./" id="sv-brand">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <rect width="18" height="18" rx="4.5" fill="var(--primary)"/>
+        <rect x="4"    y="9.5" width="2.4" height="4.5" rx="1.2" fill="var(--primary-ink)"/>
+        <rect x="7.8"  y="6.5" width="2.4" height="7.5" rx="1.2" fill="var(--primary-ink)"/>
+        <rect x="11.6" y="4"   width="2.4" height="10"  rx="1.2" fill="var(--primary-ink)"/>
+      </svg>
+      Tzippy
+    </a>
+    <div class="sv-card" id="sv-card"></div>
+    <p class="sv-disclaim">
+      These are aggregate numbers a member chose to share. The chat itself was never uploaded &mdash;
+      everything was counted in their browser, and this card carries only the figures you see.
+    </p>
+  </div>
+</div>
+
+
+<!-- ================= SHARE MODAL ================= -->
+<div class="modal-back" id="share-modal" role="dialog" aria-modal="true" aria-labelledby="sm-title">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="sm-title">Share your group's stats</h3>
+        <p class="sub">A link anyone can open, plus an image for social. Nothing is uploaded.</p>
+      </div>
+      <button class="x" id="sm-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="share-prev"><canvas id="sm-canvas" width="1200" height="630"></canvas></div>
+
+      <div class="share-opts">
+        <div class="field">
+          <label for="sm-name">Title on the card</label>
+          <input type="text" id="sm-name" maxlength="60" placeholder="e.g. deploy TLV">
+        </div>
+
+        <label class="switch">
+          <input type="checkbox" id="sm-names">
+          <span class="track"></span>
+          <span class="txt"><b>Include a top-members leaderboard</b>
+            <span>Off by default. Adds real names and their message counts to the card.</span></span>
+        </label>
+
+        <div class="priv-note" id="sm-note">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="7" width="10" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>
+          <span id="sm-note-txt">Aggregate figures only &mdash; no individual names. Safe to post publicly.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="sm-link">Shareable link</label>
+        <div class="linkrow">
+          <input type="text" id="sm-link" readonly>
+          <button class="btn btn-primary" id="sm-copy" style="flex:none">Copy link</button>
+        </div>
+      </div>
+
+      <div class="share-actions">
+        <button class="btn btn-ghost" id="sm-img">Download image</button>
+        <button class="btn btn-ghost" id="sm-open">Preview the shared page</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1514,6 +1711,8 @@ async function run(text,name){
     await step("Building the report",92);
 
     const D={chat,links,tools,discovered,signals,questions,S,T};
+    CURRENT={D,name};
+    $("#share").hidden=false;
     $("#tb-name").textContent=name;
     $("#tb-meta").textContent=nf(S.overview.total)+" messages \u00B7 "+
       S.overview.participants+" people \u00B7 "+fmtD(S.overview.first)+
@@ -1570,7 +1769,8 @@ fileInput.addEventListener("change",e=>handleFile(e.target.files[0]));
 $("#reset").addEventListener("click",()=>{
   app.classList.remove("on"); intake.style.display="";
   $("#tb-ctx").hidden=true; $("#tb-div").hidden=true;
-  $("#reset").hidden=true; $("#tb-tag").hidden=false;
+  $("#reset").hidden=true; $("#share").hidden=true; $("#tb-tag").hidden=false;
+  CURRENT=null;
   errBox.hidden=true; fileInput.value=""; window.scrollTo(0,0);
 });
 
@@ -1668,4 +1868,289 @@ function makeSample(){
   }
   return out.join("\n");
 }
+
+/* ===============================================================
+   11. SHARE  — pack aggregate metrics into a link, no upload.
+
+   The whole card lives inside the URL: numbers are JSON → deflated
+   → base64url → the #card= fragment. A fragment never leaves the
+   browser (it isn't sent to any server), so a shared link keeps the
+   same "nothing is uploaded" property as the analysis itself, and one
+   link works for any number of people at once.
+   =============================================================== */
+let CURRENT=null;          // {D,name} of the report currently on screen
+let SHARE_CARD=null;       // last-built card object (for the download button)
+
+const b64u={
+  enc(bytes){let s=""; for(const b of bytes) s+=String.fromCharCode(b);
+    return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");},
+  dec(str){str=str.replace(/-/g,"+").replace(/_/g,"/"); while(str.length%4) str+="=";
+    const s=atob(str),out=new Uint8Array(s.length);
+    for(let i=0;i<s.length;i++) out[i]=s.charCodeAt(i); return out;}
+};
+async function deflateRaw(bytes){
+  if(typeof CompressionStream==="undefined") return null;
+  const cs=new CompressionStream("deflate-raw");
+  const w=cs.writable.getWriter(); w.write(bytes); w.close();
+  return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+}
+async function inflateRaw(bytes){
+  const ds=new DecompressionStream("deflate-raw");
+  const w=ds.writable.getWriter(); w.write(bytes); w.close();
+  return new Uint8Array(await new Response(ds.readable).arrayBuffer());
+}
+async function packCard(card){
+  const raw=new TextEncoder().encode(JSON.stringify(card));
+  const packed=await deflateRaw(raw);
+  return packed?("1"+b64u.enc(packed)):("0"+b64u.enc(raw));
+}
+async function unpackCard(token){
+  const body=b64u.dec(token.slice(1));
+  const raw=token[0]==="1"?await inflateRaw(body):body;
+  return JSON.parse(new TextDecoder().decode(raw));
+}
+
+// Sum a series down to at most `max` buckets so the sparkline stays small.
+function downsample(counts,max){
+  if(counts.length<=max) return counts.slice();
+  const out=new Array(max).fill(0),step=counts.length/max;
+  for(let i=0;i<counts.length;i++) out[Math.min(max-1,Math.floor(i/step))]+=counts[i];
+  return out;
+}
+
+// Build the compact, privacy-checked payload from a full report.
+function buildCard(D,opts){
+  const S=D.S,O=S.overview;
+  const domC=new Map();
+  for(const lk of D.links) domC.set(lk.dom,(domC.get(lk.dom)||0)+1);
+  const card={
+    v:1,
+    t:(opts.title||"").trim().slice(0,60),
+    n:[O.total,O.participants,O.span,O.activeDays,O.links,O.media,O.questions,O.perActive],
+    f:O.first.getTime(), l:O.last.getTime(),
+    b:[O.busiest[0],O.busiest[1]],
+    tl:downsample(S.tl.map(t=>t[1]),44),
+    tools:D.tools.slice(0,6).map(t=>[t.name,t.n]),
+    dom:[...domC.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5),
+    sig:SIGDEF.map(([label])=>[label,(D.signals[label]||[]).length]).filter(s=>s[1]>0)
+  };
+  // Names are opt-in per card. Off = nothing that identifies a person.
+  if(opts.names)
+    card.p=S.people.slice(0,5).map(p=>[p.name,p.msgs,Math.round(1000*p.msgs/O.total)/10]);
+  return card;
+}
+
+/* ---- Shared-page renderer (what a recipient sees) ---- */
+function sparkSVG(counts){
+  const W=600,H=74,n=counts.length; if(!n) return "";
+  const peak=Math.max(...counts)||1,step=W/Math.max(n-1,1);
+  let line="";
+  counts.forEach((c,i)=>{
+    const x=i*step,y=H-6-(H-14)*(c/peak);
+    line+=(i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)+" ";
+  });
+  const area=line+"L"+W+" "+H+" L0 "+H+" Z";
+  return '<svg class="sv-spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+
+    '<path d="'+area+'" fill="var(--brand-soft)"/>'+
+    '<path d="'+line+'" fill="none" stroke="var(--brand)" stroke-width="2" '+
+    'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+}
+function renderCardView(card){
+  const n=card.n,first=new Date(card.f),last=new Date(card.l);
+  const stat=(v,l)=>'<div class="sv-stat"><div class="v">'+esc(v)+'</div><div class="l">'+esc(l)+'</div></div>';
+  const stats=stat(nf(n[0]),"messages")+stat(nf(n[1]),"people")+
+    stat(nf(n[2]),"days")+stat(nf(n[4]),"links shared")+
+    stat(nf(n[5]),"media & files")+stat(nf(n[6]),"questions")+
+    stat(nf(n[3]),"active days")+stat(String(n[7]),"msgs / active day");
+  const chips=(list,fmt)=>'<div class="chips">'+list.map(fmt).join("")+'</div>';
+  const spark='<div class="sv-block"><h4>Message volume over time</h4>'+sparkSVG(card.tl)+'</div>';
+  const tools=card.tools&&card.tools.length?'<div class="sv-block"><h4>Most-used tools</h4>'+
+    chips(card.tools,t=>'<span class="chip">'+esc(t[0])+'<i>'+nf(t[1])+'</i></span>')+'</div>':"";
+  const dom=card.dom&&card.dom.length?'<div class="sv-block"><h4>Top domains shared</h4>'+
+    chips(card.dom,d=>'<span class="chip">'+esc(d[0])+'<i>'+nf(d[1])+'</i></span>')+'</div>':"";
+  const lead=card.p&&card.p.length?'<div class="sv-block"><h4>Most active members</h4>'+
+    card.p.map((p,i)=>'<div class="sv-lead"><span class="rk">'+(i+1)+'</span>'+
+      '<span class="nm">'+esc(p[0])+'</span><span class="val">'+nf(p[1])+' msgs · '+p[2]+'%</span></div>')
+      .join("")+'</div>':"";
+  return '<div class="sv-hero"><div class="sv-eyebrow">WhatsApp group report</div>'+
+    '<div class="sv-title">'+esc(card.t||"A WhatsApp group")+'</div>'+
+    '<div class="sv-range">'+fmtD(first)+' – '+fmtD(last)+
+    ' · busiest day '+nf(card.b[1])+' messages</div></div>'+
+    '<div class="sv-body"><div class="sv-stats">'+stats+'</div>'+spark+tools+dom+lead+'</div>'+
+    '<div class="sv-foot"><span class="made">Made with <b>Tzippy</b> — analyzed in-browser, '+
+    'nothing uploaded</span><a class="btn btn-primary" href="./" id="sv-cta">Analyze your own chat →</a></div>';
+}
+
+/* ---- Share image (1200×630, drawn on a canvas) ---- */
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function fitText(ctx,text,px,weight,family,maxW,minPx){
+  let size=px;
+  while(size>minPx){ ctx.font=weight+" "+size+"px "+family; if(ctx.measureText(text).width<=maxW) break; size-=2; }
+  if(ctx.measureText(text).width>maxW){
+    let t=text; while(t.length>1&&ctx.measureText(t+"…").width>maxW) t=t.slice(0,-1);
+    text=t+"…";
+  }
+  return text;
+}
+function drawShareImage(cv,card){
+  const ctx=cv.getContext("2d"),W=1200,H=630;
+  const INK="#15171c",INK2="#585f6d",INK3="#8a91a0",BRAND="#0f766e",LINE="#e7e9ee",SOFT="#e6f4f1";
+  const SANS='-apple-system,"Segoe UI",system-ui,"Helvetica Neue",sans-serif';
+  const MONO='"SF Mono",ui-monospace,Menlo,Consolas,monospace';
+  const PAD=64;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=LINE; ctx.lineWidth=2; ctx.strokeRect(1,1,W-2,H-2);
+  ctx.fillStyle=BRAND; ctx.fillRect(0,0,8,H);
+
+  // wordmark
+  ctx.fillStyle=INK; roundRect(ctx,PAD,52,34,34,8); ctx.fill();
+  ctx.fillStyle="#fff";
+  ctx.fillRect(PAD+8,52+18,4.5,9); ctx.fillRect(PAD+15,52+12,4.5,15); ctx.fillRect(PAD+22,52+8,4.5,19);
+  ctx.fillStyle=INK; ctx.textBaseline="middle"; ctx.font="600 25px "+SANS;
+  ctx.fillText("Tzippy",PAD+48,52+19);
+
+  // eyebrow + title + range
+  ctx.textBaseline="alphabetic";
+  ctx.fillStyle=BRAND; ctx.font="700 16px "+MONO;
+  ctx.fillText("WHATSAPP GROUP REPORT",PAD,150);
+  ctx.fillStyle=INK;
+  const title=fitText(ctx,card.t||"A WhatsApp group",58,"700",SANS,W-PAD*2,30);
+  ctx.fillText(title,PAD,208);
+  const first=new Date(card.f),last=new Date(card.l);
+  ctx.fillStyle=INK2; ctx.font="400 20px "+SANS;
+  ctx.fillText(fmtD(first)+"  –  "+fmtD(last)+"   ·   busiest day "+nf(card.b[1])+" messages",PAD,246);
+
+  // headline stats
+  const n=card.n,cells=[[nf(n[0]),"messages"],[nf(n[1]),"people"],[nf(n[2]),"days"],[nf(n[4]),"links"]];
+  const colW=(W-PAD*2)/4;
+  cells.forEach((c,i)=>{
+    const x=PAD+i*colW;
+    ctx.fillStyle=INK; ctx.font="700 62px "+SANS; ctx.fillText(c[0],x,352);
+    ctx.fillStyle=INK2; ctx.font="500 18px "+SANS; ctx.fillText(c[1],x,384);
+  });
+
+  // sparkline
+  const sx=PAD,sy=418,sw=W-PAD*2,sh=96,tl=card.tl;
+  if(tl&&tl.length){
+    const peak=Math.max(...tl)||1,step=sw/Math.max(tl.length-1,1);
+    ctx.beginPath();
+    tl.forEach((v,i)=>{const px=sx+i*step,py=sy+sh-(sh-8)*(v/peak); i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
+    const lastX=sx+sw;
+    ctx.lineTo(lastX,sy+sh); ctx.lineTo(sx,sy+sh); ctx.closePath();
+    ctx.fillStyle=SOFT; ctx.fill();
+    ctx.beginPath();
+    tl.forEach((v,i)=>{const px=sx+i*step,py=sy+sh-(sh-8)*(v/peak); i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
+    ctx.strokeStyle=BRAND; ctx.lineWidth=3; ctx.lineJoin="round"; ctx.stroke();
+  }
+
+  // one contextual highlight line
+  let hl="";
+  if(card.p&&card.p.length) hl="Most active: "+card.p.slice(0,3).map(p=>p[0]+" ("+nf(p[1])+")").join(",  ");
+  else if(card.tools&&card.tools.length) hl="Top tools: "+card.tools.slice(0,4).map(t=>t[0]).join(",  ");
+  if(hl){ ctx.fillStyle=INK2; ctx.font="500 19px "+SANS;
+    ctx.fillText(fitText(ctx,hl,19,"500",SANS,W-PAD*2,19),PAD,562); }
+
+  // footer
+  ctx.fillStyle=INK3; ctx.font="400 16px "+SANS;
+  ctx.fillText("Made with Tzippy — WhatsApp exports analyzed in your browser. Nothing is uploaded.",PAD,600);
+}
+
+/* ---- Modal wiring ---- */
+async function refreshShare(){
+  if(!CURRENT) return;
+  const title=$("#sm-name").value;
+  const names=$("#sm-names").checked;
+  SHARE_CARD=buildCard(CURRENT.D,{title,names});
+  drawShareImage($("#sm-canvas"),SHARE_CARD);
+  const note=$("#sm-note"),txt=$("#sm-note-txt");
+  if(names){
+    note.classList.add("warn-tone");
+    txt.textContent="This card will show real names and message counts. Only share where the group is comfortable being identified.";
+  }else{
+    note.classList.remove("warn-tone");
+    txt.textContent="Aggregate figures only — no individual names. Safe to post publicly.";
+  }
+  try{
+    const token=await packCard(SHARE_CARD);
+    const link=location.href.split("#")[0]+"#card="+token;
+    $("#sm-link").value=link;
+    $("#sm-link").dataset.ready="1";
+  }catch(e){ $("#sm-link").value="Couldn't build a link in this browser."; }
+}
+function openShareModal(){
+  if(!CURRENT) return;
+  const guess=(CURRENT.name||"").replace(/\s*\(demo data\)$/i,"").trim();
+  $("#sm-name").value=guess;
+  $("#sm-names").checked=false;
+  $("#share-modal").classList.add("on");
+  refreshShare();
+}
+function closeShareModal(){ $("#share-modal").classList.remove("on"); }
+
+$("#share").addEventListener("click",openShareModal);
+$("#sm-close").addEventListener("click",closeShareModal);
+$("#share-modal").addEventListener("click",e=>{ if(e.target===$("#share-modal")) closeShareModal(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeShareModal(); });
+$("#sm-name").addEventListener("input",refreshShare);
+$("#sm-names").addEventListener("change",refreshShare);
+
+$("#sm-copy").addEventListener("click",async()=>{
+  const inp=$("#sm-link"),btn=$("#sm-copy");
+  if(inp.dataset.ready!=="1") return;
+  try{ await navigator.clipboard.writeText(inp.value); }
+  catch(e){ inp.focus(); inp.select(); try{document.execCommand("copy")}catch(_){} }
+  const was=btn.textContent; btn.textContent="Copied ✓";
+  setTimeout(()=>{btn.textContent=was;},1400);
+});
+$("#sm-img").addEventListener("click",()=>{
+  const btn=$("#sm-img");
+  $("#sm-canvas").toBlob(blob=>{
+    if(!blob) return;
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    const base=(SHARE_CARD&&SHARE_CARD.t?SHARE_CARD.t:"whatsapp").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"whatsapp";
+    a.href=url; a.download="tzippy-"+base+".png"; document.body.appendChild(a); a.click();
+    a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    const was=btn.textContent; btn.textContent="Saved ✓"; setTimeout(()=>{btn.textContent=was;},1400);
+  },"image/png");
+});
+$("#sm-open").addEventListener("click",()=>{
+  const link=$("#sm-link").value;
+  if($("#sm-link").dataset.ready==="1") window.open(link,"_blank","noopener");
+});
+
+/* ---- Route: if the page is opened with a #card= link, show that card ---- */
+function restoreIntake(){
+  // Leave the shared-card view and return to the normal landing page.
+  document.getElementById("share-view").classList.remove("on");
+  if(!app.classList.contains("on")) intake.style.display="";
+  window.scrollTo(0,0);
+}
+async function routeShareLink(){
+  const m=location.hash.match(/^#card=(.+)$/);
+  if(!m){ if(document.getElementById("share-view").classList.contains("on")) restoreIntake(); return false; }
+  let card;
+  try{ card=await unpackCard(m[1]); if(!card||card.v!==1) throw 0; }
+  catch(e){ return false; }
+  $("#sv-card").innerHTML=renderCardView(card);
+  const home=location.pathname;
+  $("#sv-brand").setAttribute("href",home);
+  const cta=document.getElementById("sv-cta"); if(cta) cta.setAttribute("href",home);
+  // Take over the whole page: hide intake / any open report, and clear the toolbar.
+  intake.style.display="none";
+  progress.classList.remove("on");
+  app.classList.remove("on");
+  closeShareModal();
+  $("#tb-ctx").hidden=true; $("#tb-div").hidden=true;
+  $("#reset").hidden=true; $("#share").hidden=true; $("#tb-tag").hidden=false;
+  document.getElementById("share-view").classList.add("on");
+  window.scrollTo(0,0);
+  return true;
+}
+window.addEventListener("hashchange",routeShareLink);
+routeShareLink();
 </script>
