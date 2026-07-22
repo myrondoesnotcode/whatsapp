@@ -34,9 +34,14 @@ post anywhere:
   property as the analysis. A URL fragment never leaves the browser, and because
   the whole card travels *inside* the link, one link works for any number of
   people at once with nothing to host.
-- **An image for social.** A 1200×630 card (title, headline stats, a sparkline)
-  with the site URL and *Analyze your own group — free →* burned in, so the
-  invitation travels with the image even where a link won't preview.
+- **An image for social, in two shapes.** Pick **Wide** (1200×630, for link
+  previews and desktop) or **Square** (1080×1080, fills a phone screen for
+  WhatsApp / Instagram) — it defaults to square on touch devices. The site URL
+  and *Analyze your own group — free →* are burned in, so the invitation travels
+  with the image even where a link won't preview.
+- **A GitHub-style activity graph.** The hero of every card is a contribution
+  calendar (weeks × weekdays, teal intensity) of daily message volume — the
+  group's on a group card, the member's own on a personal card.
 
 Two kinds of card, chosen at the top of the dialog:
 

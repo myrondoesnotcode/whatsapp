@@ -47,6 +47,9 @@
   --brand:#0f766e;
   --brand-soft:#e6f4f1;
 
+  /* GitHub-style contribution scale (teal), empty → busiest */
+  --gh0:#eceef1; --gh1:#bfe3d9; --gh2:#7fccb8; --gh3:#39a88c; --gh4:#0f766e;
+
   --s1:#2a78d6; --s2:#008300; --s3:#e87ba4; --s4:#eda100;
   --s5:#1baf7a; --s6:#eb6834; --s7:#4a3aa7; --s8:#e34948;
 
@@ -71,6 +74,7 @@
     --ink:#f1f2f5; --ink-2:#a0a7b4; --ink-3:#6c7482;
     --primary:#f1f2f5; --primary-ink:#15171c; --primary-hover:#d7dae0;
     --brand:#2dd4bf; --brand-soft:#10312d;
+    --gh0:#20242b; --gh1:#123f37; --gh2:#1a6b5a; --gh3:#25a183; --gh4:#2dd4bf;
     --s1:#3987e5; --s2:#008300; --s3:#d55181; --s4:#c98500;
     --s5:#199e70; --s6:#d95926; --s7:#9085e9; --s8:#e66767;
     --h0:#1e2126; --h1:#104281; --h2:#184f95; --h3:#1c5cab; --h4:#256abf;
@@ -632,6 +636,10 @@ table a:hover{text-decoration:underline}
 .sv-block{margin-top:20px}
 .sv-block h4{font:600 11px/1 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0 0 11px}
 .sv-spark{width:100%; height:74px; display:block}
+.sv-contrib{display:block; max-width:100%; height:auto; margin:2px 0}
+.sv-contrib .ghm{font:600 9px var(--mono); fill:var(--ink-3); text-transform:uppercase; letter-spacing:.05em}
+.sv-legend{display:flex; align-items:center; gap:5px; margin-top:10px; font-size:11px; color:var(--ink-3)}
+.sv-legend i{width:11px; height:11px; border-radius:2px; display:inline-block}
 .sv-lead{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line)}
 .sv-lead:first-of-type{border-top:0}
 .sv-lead .rk{flex:none; width:20px; font:600 12px var(--mono); color:var(--ink-3)}
@@ -2001,11 +2009,21 @@ async function unpackCard(token){
 }
 
 // Sum a series down to at most `max` buckets so the sparkline stays small.
-function downsample(counts,max){
-  if(counts.length<=max) return counts.slice();
-  const out=new Array(max).fill(0),step=counts.length/max;
-  for(let i=0;i<counts.length;i++) out[Math.min(max-1,Math.floor(i/step))]+=counts[i];
-  return out;
+// GitHub-style calendar payload from a gap-filled daily series [[dayKey,count],…].
+// Capped to the most recent ~53 weeks so the link stays small.
+const CAL_CAP=371;
+function calFromDaily(pairs){
+  const keep=pairs.slice(-CAL_CAP);
+  const cal=keep.map(t=>t[1]);
+  const cs=keep.length?keep[0][0]:"";
+  let wd0=0;
+  if(cs){ const [y,m,d]=cs.split("-").map(Number); wd0=(new Date(y,m-1,d).getDay()+6)%7; }
+  return {cal, wd0, cs};   // cs = first shown day (for month labels), wd0 0=Mon..6=Sun
+}
+function personDaily(D,name){
+  const byDay=new Map();
+  for(const msg of D.chat.people) if(msg.sender===name) byDay.set(dayKey(msg.ts),(byDay.get(dayKey(msg.ts))||0)+1);
+  return D.S.tl.map(t=>[t[0], byDay.get(t[0])||0]);
 }
 
 // Build the compact, privacy-checked payload from a full report.
@@ -2013,13 +2031,14 @@ function buildCard(D,opts){
   const S=D.S,O=S.overview;
   const domC=new Map();
   for(const lk of D.links) domC.set(lk.dom,(domC.get(lk.dom)||0)+1);
+  const cal=calFromDaily(S.tl);
   const card={
     v:1,
     t:(opts.title||"").trim().slice(0,60),
     n:[O.total,O.participants,O.span,O.activeDays,O.links,O.media,O.questions,O.perActive],
     f:O.first.getTime(), l:O.last.getTime(),
     b:[O.busiest[0],O.busiest[1]],
-    tl:downsample(S.tl.map(t=>t[1]),44),
+    cal:cal.cal, wd0:cal.wd0, cs:cal.cs,
     tools:D.tools.slice(0,6).map(t=>[t.name,t.n]),
     dom:[...domC.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5),
     sig:SIGDEF.map(([label])=>[label,(D.signals[label]||[]).length]).filter(s=>s[1]>0)
@@ -2059,30 +2078,61 @@ function computeAwards(people){
 function buildPersonCard(D,idx,title){
   const S=D.S,O=S.overview,p=S.people[Math.max(0,Math.min(idx,S.people.length-1))]||S.people[0];
   const mine=computeAwards(S.people).filter(a=>a[2]===p.name).map(a=>[a[0],a[1],a[3]]);
+  const cal=calFromDaily(personDaily(D,p.name));   // the member's OWN activity graph
   return {
     v:1, k:"p", t:(title||"").trim().slice(0,60), who:p.name,
     n:[p.msgs, Math.round(1000*p.msgs/O.total)/10, S.people.indexOf(p)+1, S.people.length,
        p.days.size, p.links, p.questions, p.media, p.avgWords, p.started, p.gotReplies],
     em:p.sig||"",
     aw:mine,
+    cal:cal.cal, wd0:cal.wd0, cs:cal.cs,
     f:O.first.getTime(), l:O.last.getTime()
   };
 }
 
-/* ---- Shared-page renderer (what a recipient sees) ---- */
-function sparkSVG(counts){
-  const W=600,H=74,n=counts.length; if(!n) return "";
-  const peak=Math.max(...counts)||1,step=W/Math.max(n-1,1);
-  let line="";
-  counts.forEach((c,i)=>{
-    const x=i*step,y=H-6-(H-14)*(c/peak);
-    line+=(i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)+" ";
-  });
-  const area=line+"L"+W+" "+H+" L0 "+H+" Z";
-  return '<svg class="sv-spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+
-    '<path d="'+area+'" fill="var(--brand-soft)"/>'+
-    '<path d="'+line+'" fill="none" stroke="var(--brand)" stroke-width="2" '+
-    'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+/* ---- GitHub-style contribution graph (shared by page + image) ---- */
+const GH_VARS=["--gh0","--gh1","--gh2","--gh3","--gh4"];
+const GH_HEX=["#eceef1","#bfe3d9","#7fccb8","#39a88c","#0f766e"];
+function contribCells(cal,wd0){
+  const peak=Math.max(1,...cal),cells=[];
+  let col=0,row=wd0,maxCol=0;
+  for(let i=0;i<cal.length;i++){
+    const c=cal[i],level=c===0?0:Math.min(4,1+Math.floor((c/peak)*3.999));
+    cells.push({col,row,level}); maxCol=col;
+    row++; if(row===7){row=0;col++;}
+  }
+  return {cells,cols:maxCol+1,peak};
+}
+// Columns where a new month begins → [{col,label}]
+function contribMonths(cs,cal,wd0){
+  if(!cs) return [];
+  const [y,m,d]=cs.split("-").map(Number),start=new Date(y,m-1,d);
+  const out=[]; let last=-1;
+  for(let i=0;i<cal.length;i++){
+    const dt=new Date(start); dt.setDate(start.getDate()+i);
+    if(dt.getMonth()!==last && dt.getDate()<=7){ out.push({col:Math.floor((wd0+i)/7),label:MON[dt.getMonth()]}); last=dt.getMonth(); }
+  }
+  return out;
+}
+function contribSVG(cal,wd0,cs){
+  if(!cal||!cal.length) return "";
+  const {cells,cols}=contribCells(cal,wd0);
+  const cell=13,gap=3,size=cell+gap,top=16;
+  const W=cols*size-gap,H=top+7*size-gap;
+  let r="";
+  for(const l of contribMonths(cs,cal,wd0)) r+='<text class="ghm" x="'+(l.col*size)+'" y="10">'+l.label+'</text>';
+  for(const c of cells)
+    r+='<rect x="'+(c.col*size)+'" y="'+(top+c.row*size)+'" width="'+cell+'" height="'+cell+'" rx="2.5" fill="var('+GH_VARS[c.level]+')"/>';
+  return '<svg class="sv-contrib" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" '+
+    'preserveAspectRatio="xMinYMid meet" role="img" aria-label="Daily message activity">'+r+'</svg>';
+}
+function contribLegend(){
+  return '<div class="sv-legend"><span>Less</span>'+
+    GH_VARS.map(v=>'<i style="background:var('+v+')"></i>').join("")+'<span>More</span></div>';
+}
+function contribBlock(card,heading){
+  if(!card.cal||!card.cal.length) return "";
+  return '<div class="sv-block"><h4>'+heading+'</h4>'+contribSVG(card.cal,card.wd0,card.cs)+contribLegend()+'</div>';
 }
 function renderCardView(card){
   if(card.k==="p") return renderPersonView(card);
@@ -2093,7 +2143,7 @@ function renderCardView(card){
     stat(nf(n[5]),"media & files")+stat(nf(n[6]),"questions")+
     stat(nf(n[3]),"active days")+stat(String(n[7]),"msgs / active day");
   const chips=(list,fmt)=>'<div class="chips">'+list.map(fmt).join("")+'</div>';
-  const spark='<div class="sv-block"><h4>Message volume over time</h4>'+sparkSVG(card.tl)+'</div>';
+  const graph=contribBlock(card,"Daily activity");
   const tools=card.tools&&card.tools.length?'<div class="sv-block"><h4>Most-used tools</h4>'+
     chips(card.tools,t=>'<span class="chip">'+esc(t[0])+'<i>'+nf(t[1])+'</i></span>')+'</div>':"";
   const dom=card.dom&&card.dom.length?'<div class="sv-block"><h4>Top domains shared</h4>'+
@@ -2110,7 +2160,7 @@ function renderCardView(card){
     '<div class="sv-title">'+esc(card.t||"A WhatsApp group")+'</div>'+
     '<div class="sv-range">'+fmtD(first)+' – '+fmtD(last)+
     ' · busiest day '+nf(card.b[1])+' messages</div></div>'+
-    '<div class="sv-body"><div class="sv-stats">'+stats+'</div>'+spark+awards+tools+dom+lead+'</div>'+
+    '<div class="sv-body"><div class="sv-stats">'+stats+'</div>'+graph+awards+tools+dom+lead+'</div>'+
     '<div class="sv-foot"><span class="made">Made with <b>Tzippy</b> — analyzed in-browser, '+
     'nothing uploaded</span><a class="btn btn-primary" href="./" id="sv-cta">Analyze your own chat →</a></div>';
 }
@@ -2128,11 +2178,12 @@ function renderPersonView(card){
       '<div class="tx"><div class="ti">'+esc(a[1])+'</div>'+
       '<div class="wn">'+esc(a[2])+'</div></div></div>').join("")+'</div></div>':
     '<div class="sv-block"><p class="sv-noawards">No top-spot awards this time — plenty of room to climb 📈</p></div>';
+  const graph=contribBlock(card,"Your activity");
   const inGroup=card.t?(" in "+esc(card.t)):"";
   return '<div class="sv-hero"><div class="sv-eyebrow">My WhatsApp stats'+inGroup+'</div>'+
     '<div class="sv-title">'+esc(card.who)+'</div>'+
     '<div class="sv-range">'+fmtD(new Date(card.f))+' – '+fmtD(new Date(card.l))+'</div></div>'+
-    '<div class="sv-body"><div class="sv-stats">'+stats+'</div>'+emoji+awards+'</div>'+
+    '<div class="sv-body"><div class="sv-stats">'+stats+'</div>'+graph+emoji+awards+'</div>'+
     '<div class="sv-foot"><span class="made">Made with <b>Tzippy</b> — analyzed in-browser, '+
     'nothing uploaded</span><a class="btn btn-primary" href="./" id="sv-cta">Analyze your own chat →</a></div>';
 }
@@ -2189,12 +2240,23 @@ function imgStatRow(ctx,cells,x0,y,colW,numPx,labelPx){
     ctx.fillStyle=IMG.INK2; ctx.font="500 "+labelPx+"px "+IMG.SANS; ctx.fillText(c[1],x,y+labelPx+13);
   });
 }
-function imgSpark(ctx,tl,sx,sy,sw,sh){
-  if(!tl||!tl.length) return;
-  const peak=Math.max(...tl)||1,step=sw/Math.max(tl.length-1,1);
-  const trace=()=>{ctx.beginPath();tl.forEach((v,i)=>{const px=sx+i*step,py=sy+sh-(sh-8)*(v/peak);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});};
-  trace(); ctx.lineTo(sx+sw,sy+sh); ctx.lineTo(sx,sy+sh); ctx.closePath(); ctx.fillStyle=IMG.SOFT; ctx.fill();
-  trace(); ctx.strokeStyle=IMG.BRAND; ctx.lineWidth=3; ctx.lineJoin="round"; ctx.stroke();
+// GitHub-style contribution calendar on the canvas, fit into box (x,y,w,h).
+function drawContrib(ctx,card,x,y,w,h,opts){
+  if(!card.cal||!card.cal.length) return;
+  opts=opts||{};
+  const {cells,cols}=contribCells(card.cal,card.wd0);
+  const labelH=opts.labels===false?0:24, maxCell=opts.maxCell||22;
+  const size=Math.min(maxCell, w/cols, (h-labelH)/7);
+  const gap=size*0.16, cell=size-gap, gridW=cols*size-gap;
+  const ox=x+(w-gridW)/2, oy=y+labelH;
+  if(labelH){
+    ctx.fillStyle=IMG.INK3; ctx.font="600 "+Math.max(12,size*0.6)+"px "+IMG.MONO; ctx.textBaseline="alphabetic";
+    for(const l of contribMonths(card.cs,card.cal,card.wd0)) ctx.fillText(l.label.toUpperCase(),ox+l.col*size,oy-8);
+  }
+  for(const c of cells){
+    ctx.fillStyle=GH_HEX[c.level];
+    roundRect(ctx,ox+c.col*size,oy+c.row*size,cell,cell,Math.max(2,cell*0.22)); ctx.fill();
+  }
 }
 // Award cards in a 2-col grid. items:[[icon,title,winner(,val)],...]
 function imgAwardGrid(ctx,items,x,y,totalW,max){
@@ -2224,11 +2286,8 @@ function groupWide(ctx,card,W,H){
   ctx.fillText(fmtD(new Date(card.f))+"  –  "+fmtD(new Date(card.l))+"   ·   busiest day "+nf(card.b[1])+" messages",PAD,246);
   const n=card.n;
   imgStatRow(ctx,[[nf(n[0]),"messages"],[nf(n[1]),"people"],[nf(n[2]),"days"],[nf(n[4]),"links"]],PAD,352,(W-PAD*2)/4,62,18);
-  imgSpark(ctx,card.tl,PAD,418,W-PAD*2,96);
-  let hl="";
-  if(card.a&&card.a.length) hl=card.a[0][0]+"  "+card.a[0][1]+": "+card.a[0][2];
-  else if(card.tools&&card.tools.length) hl="Top tools: "+card.tools.slice(0,4).map(t=>t[0]).join(",  ");
-  if(hl){ ctx.fillStyle=INK2; ctx.font="500 20px "+SANS; ctx.fillText(fitText(ctx,hl,20,"500",SANS,W-PAD*2,20),PAD,556); }
+  ctx.fillStyle=INK2; ctx.font="700 15px "+MONO; ctx.textBaseline="alphabetic"; ctx.fillText("DAILY ACTIVITY",PAD,410);
+  drawContrib(ctx,card,PAD,420,W-PAD*2,138,{maxCell:20});
 }
 function groupSquare(ctx,card,W,H){
   const {INK,INK2,BRAND,SANS,MONO,PAD}=IMG;
@@ -2240,12 +2299,13 @@ function groupSquare(ctx,card,W,H){
   const n=card.n,colW=(W-PAD*2)/4;
   imgStatRow(ctx,[[nf(n[0]),"messages"],[nf(n[1]),"people"],[nf(n[2]),"days"],[nf(n[4]),"links"]],PAD,404,colW,66,18);
   imgStatRow(ctx,[[nf(n[5]),"media"],[nf(n[6]),"questions"],[nf(n[3]),"active days"],[String(n[7]),"per active day"]],PAD,520,colW,46,17);
-  imgSpark(ctx,card.tl,PAD,590,W-PAD*2,120);
+  ctx.fillStyle=INK2; ctx.font="700 16px "+MONO; ctx.textBaseline="alphabetic"; ctx.fillText("DAILY ACTIVITY",PAD,588);
+  drawContrib(ctx,card,PAD,600,W-PAD*2,150,{maxCell:24});
   if(card.a&&card.a.length){
-    ctx.fillStyle=INK2; ctx.font="700 16px "+MONO; ctx.fillText("GROUP AWARDS  🏆",PAD,776);
-    imgAwardGrid(ctx,card.a,PAD,796,W-PAD*2,4);
+    ctx.fillStyle=INK2; ctx.font="700 16px "+MONO; ctx.fillText("GROUP AWARDS  🏆",PAD,792);
+    imgAwardGrid(ctx,card.a,PAD,810,W-PAD*2,4);
   }else{
-    let y=770;
+    let y=790;
     if(card.tools&&card.tools.length){ ctx.fillStyle=INK2; ctx.font="500 22px "+SANS;
       ctx.fillText(fitText(ctx,"Top tools: "+card.tools.slice(0,4).map(t=>t[0]).join(",  "),22,"500",SANS,W-PAD*2,22),PAD,y); y+=44; }
     if(card.dom&&card.dom.length){ ctx.fillStyle=INK2; ctx.font="500 22px "+SANS;
@@ -2263,13 +2323,12 @@ function personHeader(ctx,card,W,titlePx,eyebrowY,titleY){
   if(card.em){ ctx.font="46px "+SANS; ctx.textAlign="right"; ctx.fillText(card.em.slice(0,6),W-PAD,titleY-2); ctx.textAlign="left"; }
 }
 function personWide(ctx,card,W,H){
-  const {INK2,SANS,PAD}=IMG,n=card.n,colW=(W-PAD*2)/4;
-  personHeader(ctx,card,W,58,150,208);
-  imgStatRow(ctx,[[nf(n[0]),"messages"],[n[1]+"%","of the group"],["#"+n[2],"of "+n[3]+" members"],[nf(n[4]),"active days"]],PAD,344,colW,58,18);
-  imgStatRow(ctx,[[nf(n[5]),"links shared"],[nf(n[6]),"questions"],[nf(n[9]),"chats started"],[String(n[8]),"words / msg"]],PAD,452,colW,42,16);
-  const hl=card.aw&&card.aw.length? card.aw.map(a=>a[0]+" "+a[1]).slice(0,3).join("    ")
-        : "In "+(card.t||"the group")+" · ranked #"+n[2]+" of "+n[3];
-  ctx.fillStyle=INK2; ctx.font="500 20px "+SANS; ctx.fillText(fitText(ctx,hl,20,"500",SANS,W-PAD*2,20),PAD,540);
+  const {INK2,MONO,SANS,PAD}=IMG,n=card.n,colW=(W-PAD*2)/4;
+  personHeader(ctx,card,W,58,150,204);
+  imgStatRow(ctx,[[nf(n[0]),"messages"],[n[1]+"%","of the group"],["#"+n[2],"of "+n[3]+" members"],[nf(n[4]),"active days"]],PAD,320,colW,52,17);
+  imgStatRow(ctx,[[nf(n[5]),"links shared"],[nf(n[6]),"questions"],[nf(n[9]),"chats started"],[String(n[8]),"words / msg"]],PAD,414,colW,38,15);
+  ctx.fillStyle=INK2; ctx.font="700 15px "+MONO; ctx.textBaseline="alphabetic"; ctx.fillText("YOUR ACTIVITY",PAD,470);
+  drawContrib(ctx,card,PAD,480,W-PAD*2,80,{maxCell:14,labels:false});
 }
 function personSquare(ctx,card,W,H){
   const {INK,INK2,BRAND,SANS,MONO,PAD}=IMG,n=card.n,colW=(W-PAD*2)/4;
@@ -2278,13 +2337,14 @@ function personSquare(ctx,card,W,H){
   ctx.fillText(fmtD(new Date(card.f))+"  –  "+fmtD(new Date(card.l)),PAD,296);
   imgStatRow(ctx,[[nf(n[0]),"messages"],[n[1]+"%","of the group"],["#"+n[2],"of "+n[3]],[nf(n[4]),"active days"]],PAD,410,colW,60,18);
   imgStatRow(ctx,[[nf(n[5]),"links"],[nf(n[6]),"questions"],[nf(n[9]),"chats started"],[String(n[8]),"words / msg"]],PAD,530,colW,46,17);
+  ctx.fillStyle=INK2; ctx.font="700 16px "+MONO; ctx.textBaseline="alphabetic"; ctx.fillText("YOUR ACTIVITY",PAD,598);
+  drawContrib(ctx,card,PAD,610,W-PAD*2,140,{maxCell:24});
   if(card.aw&&card.aw.length){
-    ctx.fillStyle=INK2; ctx.font="700 16px "+MONO; ctx.fillText("AWARDS HELD  🏆",PAD,626);
-    imgAwardGrid(ctx,card.aw,PAD,646,W-PAD*2,4);
+    ctx.fillStyle=INK2; ctx.font="700 16px "+MONO; ctx.fillText("AWARDS HELD  🏆",PAD,792);
+    imgAwardGrid(ctx,card.aw,PAD,810,W-PAD*2,4);
   }else{
     ctx.fillStyle=INK2; ctx.font="500 24px "+SANS;
-    ctx.fillText("Ranked #"+n[2]+" of "+n[3]+" — room to climb 📈",PAD,650);
-    imgSpark(ctx,card.tl,PAD,700,W-PAD*2,150);
+    ctx.fillText("Ranked #"+n[2]+" of "+n[3]+" — room to climb 📈",PAD,800);
   }
 }
 function drawShareImage(cv,card){
