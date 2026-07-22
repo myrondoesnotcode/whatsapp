@@ -103,6 +103,7 @@ body{
   margin:0; background:var(--bg); color:var(--ink);
   font:400 14px/1.55 var(--sans);
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;   /* no stray horizontal scroll; keeps the fixed modal viewport-bound */
 }
 h1,h2,h3,h4{margin:0; font-weight:600; letter-spacing:-.018em}
 p{margin:0}
@@ -157,6 +158,15 @@ a{color:inherit}
 @media (max-width:720px){
   .topbar{padding:0 12px; gap:10px}
   .topbar .ctx .mt{display:none}
+}
+@media (max-width:560px){
+  /* Keep the primary actions (Share, New analysis, theme) in reach on a phone;
+     GitHub still lives in the footer and on every share card. */
+  #gh{display:none}
+  .topbar .ctx .nm{max-width:16ch}
+  .topbar{gap:8px}
+  .topbar .acts{gap:4px}
+  .btn{height:32px; padding:0 11px}
 }
 
 /* =========== LANDING =========== */
@@ -364,7 +374,7 @@ section{margin-bottom:52px; scroll-margin-top:calc(var(--topbar) + 16px)}
 .card-head{margin-bottom:15px}
 .card h3{font-size:13.5px}
 .card .sub{color:var(--ink-3); font-size:12.5px; margin-top:5px; line-height:1.55}
-.g2{display:grid; grid-template-columns:repeat(auto-fit,minmax(348px,1fr)); gap:14px}
+.g2{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,348px),1fr)); gap:14px}
 .g2 .card{margin:0}
 
 /* ---------- Bars ---------- */
@@ -414,7 +424,7 @@ section{margin-bottom:52px; scroll-margin-top:calc(var(--topbar) + 16px)}
 .cap{font:400 11px/1.4 var(--mono); color:var(--ink-3); margin-top:10px}
 
 /* ---------- People ---------- */
-.folk{display:grid; grid-template-columns:repeat(auto-fill,minmax(228px,1fr)); gap:10px}
+.folk{display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,228px),1fr)); gap:10px}
 .person{
   background:var(--panel); border:1px solid var(--line); border-radius:var(--r);
   padding:14px; display:flex; gap:11px; align-items:flex-start; box-shadow:var(--sh-1);
@@ -504,13 +514,16 @@ table a:hover{text-decoration:underline}
 /* =========== SHARE MODAL =========== */
 .modal-back{
   position:fixed; inset:0; z-index:100; display:none;
+  /* width pinned to the layout viewport (100vw), not window.innerWidth, so the
+     overlay + centred modal always match the visible area on mobile. */
+  width:100vw; max-width:100vw;
   align-items:flex-start; justify-content:center; padding:5vh 16px 16px;
   background:color-mix(in srgb,var(--ink) 42%,transparent);
   backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); overflow:auto;
 }
 .modal-back.on{display:flex}
 .modal{
-  width:100%; max-width:560px; background:var(--bg);
+  width:100%; max-width:min(560px, calc(100vw - 32px)); background:var(--bg);
   border:1px solid var(--line-2); border-radius:12px; box-shadow:var(--sh-3,0 24px 64px rgba(0,0,0,.28));
   overflow:hidden; animation:pop .16s ease;
 }
@@ -540,7 +553,14 @@ table a:hover{text-decoration:underline}
   border:1px solid var(--line); border-radius:var(--r); overflow:hidden;
   background:var(--inset);
 }
-.share-prev canvas{display:block; width:100%; height:auto}
+.share-prev canvas{display:block; width:100%; height:auto; max-height:60vh; object-fit:contain}
+.fmt-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:-2px}
+.fmt-label{font-size:12px; font-weight:600; color:var(--ink-2)}
+.fmt-seg{display:flex; gap:2px; background:var(--inset); padding:3px; border-radius:var(--r-sm)}
+.fmt-btn{padding:6px 11px; cursor:pointer; background:transparent; border:0; border-radius:3px;
+  color:var(--ink-2); font:500 12px/1 var(--sans); transition:background .12s,color .12s}
+.fmt-btn:hover{color:var(--ink)}
+.fmt-btn.on{background:var(--panel); color:var(--ink); box-shadow:var(--sh-1)}
 
 .share-opts{display:flex; flex-direction:column; gap:12px}
 .field label{display:block; font-size:12px; font-weight:600; color:var(--ink-2); margin-bottom:5px}
@@ -838,6 +858,14 @@ table a:hover{text-decoration:underline}
       </div>
 
       <div class="share-prev"><canvas id="sm-canvas" width="1200" height="630"></canvas></div>
+
+      <div class="fmt-row">
+        <span class="fmt-label">Image shape</span>
+        <div class="fmt-seg" role="tablist">
+          <button class="fmt-btn on" id="sm-fmt-wide" role="tab">Wide · web</button>
+          <button class="fmt-btn" id="sm-fmt-square" role="tab">Square · mobile</button>
+        </div>
+      </div>
 
       <div class="share-opts">
         <div class="field">
@@ -2136,113 +2164,139 @@ function imgWordmark(ctx){
   ctx.fillStyle=INK; ctx.textBaseline="middle"; ctx.font="600 25px "+SANS;
   ctx.fillText("Tzippy",PAD+48,52+19); ctx.textBaseline="alphabetic";
 }
-function imgBillboard(ctx,W){
-  const {INK,BRAND,LINE,SANS,MONO,PAD}=IMG;
-  ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.beginPath();
-  ctx.moveTo(PAD,578); ctx.lineTo(W-PAD,578); ctx.stroke();
-  ctx.fillStyle=INK; ctx.font="600 21px "+SANS; ctx.textBaseline="middle";
-  ctx.fillText("Analyze your WhatsApp group — free →",PAD,606);
-  ctx.fillStyle=BRAND; ctx.font="700 21px "+MONO;
-  const site=siteLabel(), sW=ctx.measureText(site).width;
-  ctx.fillText(site,W-PAD-sW,606); ctx.textBaseline="alphabetic";
-}
-function drawPersonImage(cv,card){
-  const ctx=cv.getContext("2d"),W=1200,H=630,{INK,INK2,BRAND,SANS,MONO,PAD}=IMG;
+function imgFrame(ctx,W,H){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
   ctx.strokeStyle=IMG.LINE; ctx.lineWidth=2; ctx.strokeRect(1,1,W-2,H-2);
-  ctx.fillStyle=BRAND; ctx.fillRect(0,0,8,H);
+  ctx.fillStyle=IMG.BRAND; ctx.fillRect(0,0,8,H);
   imgWordmark(ctx);
-  ctx.fillStyle=BRAND; ctx.font="700 16px "+MONO;
-  ctx.fillText(("MY WHATSAPP STATS"+(card.t?(" · "+card.t):"")).toUpperCase(),PAD,150);
-  ctx.fillStyle=INK; ctx.fillText(fitText(ctx,card.who||"Me",58,"700",SANS,W-PAD*2-260,30),PAD,208);
-  // emoji signature, right-aligned in the header
-  if(card.em){ ctx.font="46px "+SANS; ctx.textAlign="right"; ctx.fillText(card.em.slice(0,6),W-PAD,206); ctx.textAlign="left"; }
-  const n=card.n,cells=[[nf(n[0]),"messages"],[n[1]+"%","of the group"],["#"+n[2],"of "+n[3]+" members"],[nf(n[4]),"active days"]];
-  const colW=(W-PAD*2)/4;
-  cells.forEach((c,i)=>{const x=PAD+i*colW;
-    ctx.fillStyle=INK; ctx.font="700 60px "+SANS; ctx.fillText(fitText(ctx,c[0],60,"700",SANS,colW-14,34),x,344);
-    ctx.fillStyle=INK2; ctx.font="500 18px "+SANS; ctx.fillText(c[1],x,378);});
-  const cells2=[[nf(n[5]),"links shared"],[nf(n[6]),"questions"],[nf(n[9]),"chats started"],[n[8],"words / msg"]];
-  cells2.forEach((c,i)=>{const x=PAD+i*colW;
-    ctx.fillStyle=INK; ctx.font="700 42px "+SANS; ctx.fillText(fitText(ctx,c[0],42,"700",SANS,colW-14,24),x,452);
-    ctx.fillStyle=INK2; ctx.font="500 16px "+SANS; ctx.fillText(c[1],x,480);});
-  let hl=card.aw&&card.aw.length? card.aw.map(a=>a[0]+" "+a[1]).slice(0,3).join("    ")
-        : "In "+(card.t||"the group")+" · ranked #"+n[2]+" of "+n[3];
-  ctx.fillStyle=INK2; ctx.font="500 20px "+SANS;
-  ctx.fillText(fitText(ctx,hl,20,"500",SANS,W-PAD*2,20),PAD,540);
-  imgBillboard(ctx,W);
 }
-function drawShareImage(cv,card){
-  if(card.k==="p") return drawPersonImage(cv,card);
-  const ctx=cv.getContext("2d"),W=1200,H=630;
-  const INK="#15171c",INK2="#585f6d",INK3="#8a91a0",BRAND="#0f766e",LINE="#e7e9ee",SOFT="#e6f4f1";
-  const SANS='-apple-system,"Segoe UI",system-ui,"Helvetica Neue",sans-serif';
-  const MONO='"SF Mono",ui-monospace,Menlo,Consolas,monospace';
-  const PAD=64;
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle=LINE; ctx.lineWidth=2; ctx.strokeRect(1,1,W-2,H-2);
-  ctx.fillStyle=BRAND; ctx.fillRect(0,0,8,H);
-
-  // wordmark
-  ctx.fillStyle=INK; roundRect(ctx,PAD,52,34,34,8); ctx.fill();
-  ctx.fillStyle="#fff";
-  ctx.fillRect(PAD+8,52+18,4.5,9); ctx.fillRect(PAD+15,52+12,4.5,15); ctx.fillRect(PAD+22,52+8,4.5,19);
-  ctx.fillStyle=INK; ctx.textBaseline="middle"; ctx.font="600 25px "+SANS;
-  ctx.fillText("Tzippy",PAD+48,52+19);
-
-  // eyebrow + title + range
-  ctx.textBaseline="alphabetic";
-  ctx.fillStyle=BRAND; ctx.font="700 16px "+MONO;
-  ctx.fillText("WHATSAPP GROUP REPORT",PAD,150);
-  ctx.fillStyle=INK;
-  const title=fitText(ctx,card.t||"A WhatsApp group",58,"700",SANS,W-PAD*2,30);
-  ctx.fillText(title,PAD,208);
-  const first=new Date(card.f),last=new Date(card.l);
-  ctx.fillStyle=INK2; ctx.font="400 20px "+SANS;
-  ctx.fillText(fmtD(first)+"  –  "+fmtD(last)+"   ·   busiest day "+nf(card.b[1])+" messages",PAD,246);
-
-  // headline stats
-  const n=card.n,cells=[[nf(n[0]),"messages"],[nf(n[1]),"people"],[nf(n[2]),"days"],[nf(n[4]),"links"]];
-  const colW=(W-PAD*2)/4;
-  cells.forEach((c,i)=>{
-    const x=PAD+i*colW;
-    ctx.fillStyle=INK; ctx.font="700 62px "+SANS; ctx.fillText(c[0],x,352);
-    ctx.fillStyle=INK2; ctx.font="500 18px "+SANS; ctx.fillText(c[1],x,384);
+function imgBillboard(ctx,W,H){
+  const {INK,BRAND,LINE,SANS,MONO,PAD}=IMG, y=H-24, div=H-52;
+  ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(PAD,div); ctx.lineTo(W-PAD,div); ctx.stroke();
+  ctx.fillStyle=INK; ctx.font="600 21px "+SANS; ctx.textBaseline="middle";
+  ctx.fillText("Analyze your WhatsApp group — free →",PAD,y);
+  ctx.fillStyle=BRAND; ctx.font="700 21px "+MONO;
+  const site=siteLabel(), sW=ctx.measureText(site).width;
+  ctx.fillText(site,W-PAD-sW,y); ctx.textBaseline="alphabetic";
+}
+// A row of stat columns. cells:[[value,label],...]
+function imgStatRow(ctx,cells,x0,y,colW,numPx,labelPx){
+  cells.forEach((c,i)=>{const x=x0+i*colW;
+    ctx.fillStyle=IMG.INK; ctx.font="700 "+numPx+"px "+IMG.SANS;
+    ctx.fillText(fitText(ctx,c[0],numPx,"700",IMG.SANS,colW-14,numPx*0.5),x,y);
+    ctx.fillStyle=IMG.INK2; ctx.font="500 "+labelPx+"px "+IMG.SANS; ctx.fillText(c[1],x,y+labelPx+13);
   });
+}
+function imgSpark(ctx,tl,sx,sy,sw,sh){
+  if(!tl||!tl.length) return;
+  const peak=Math.max(...tl)||1,step=sw/Math.max(tl.length-1,1);
+  const trace=()=>{ctx.beginPath();tl.forEach((v,i)=>{const px=sx+i*step,py=sy+sh-(sh-8)*(v/peak);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});};
+  trace(); ctx.lineTo(sx+sw,sy+sh); ctx.lineTo(sx,sy+sh); ctx.closePath(); ctx.fillStyle=IMG.SOFT; ctx.fill();
+  trace(); ctx.strokeStyle=IMG.BRAND; ctx.lineWidth=3; ctx.lineJoin="round"; ctx.stroke();
+}
+// Award cards in a 2-col grid. items:[[icon,title,winner(,val)],...]
+function imgAwardGrid(ctx,items,x,y,totalW,max){
+  const gap=16,colW=(totalW-gap)/2,rowH=92;
+  items.slice(0,max).forEach((a,i)=>{
+    const cx=x+(i%2)*(colW+gap), cy=y+Math.floor(i/2)*(rowH+gap);
+    ctx.fillStyle="#f5f6f8"; roundRect(ctx,cx,cy,colW,rowH,14); ctx.fill();
+    ctx.strokeStyle=IMG.LINE; ctx.lineWidth=1; roundRect(ctx,cx,cy,colW,rowH,14); ctx.stroke();
+    ctx.textBaseline="middle";
+    ctx.font="34px "+IMG.SANS; ctx.fillStyle=IMG.INK; ctx.fillText(a[0],cx+20,cy+rowH/2);
+    ctx.font="600 23px "+IMG.SANS; ctx.fillStyle=IMG.INK;
+    ctx.fillText(fitText(ctx,a[1],23,"600",IMG.SANS,colW-96,15),cx+70,cy+rowH/2-13);
+    const sub=a[3]?(a[2]+" · "+a[3]):a[2];
+    ctx.font="500 18px "+IMG.SANS; ctx.fillStyle=IMG.INK2;
+    ctx.fillText(fitText(ctx,sub,18,"500",IMG.SANS,colW-96,12),cx+70,cy+rowH/2+15);
+  });
+  ctx.textBaseline="alphabetic";
+}
 
-  // sparkline
-  const sx=PAD,sy=418,sw=W-PAD*2,sh=96,tl=card.tl;
-  if(tl&&tl.length){
-    const peak=Math.max(...tl)||1,step=sw/Math.max(tl.length-1,1);
-    ctx.beginPath();
-    tl.forEach((v,i)=>{const px=sx+i*step,py=sy+sh-(sh-8)*(v/peak); i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
-    const lastX=sx+sw;
-    ctx.lineTo(lastX,sy+sh); ctx.lineTo(sx,sy+sh); ctx.closePath();
-    ctx.fillStyle=SOFT; ctx.fill();
-    ctx.beginPath();
-    tl.forEach((v,i)=>{const px=sx+i*step,py=sy+sh-(sh-8)*(v/peak); i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
-    ctx.strokeStyle=BRAND; ctx.lineWidth=3; ctx.lineJoin="round"; ctx.stroke();
-  }
-
-  // one contextual highlight line — a headline award if names are on
+/* ---- Group card layouts ---- */
+function groupWide(ctx,card,W,H){
+  const {INK,INK2,BRAND,SANS,MONO,PAD}=IMG;
+  ctx.fillStyle=BRAND; ctx.font="700 16px "+MONO; ctx.fillText("WHATSAPP GROUP REPORT",PAD,150);
+  ctx.fillStyle=INK; ctx.font="700 58px "+SANS;
+  ctx.fillText(fitText(ctx,card.t||"A WhatsApp group",58,"700",SANS,W-PAD*2,30),PAD,208);
+  ctx.fillStyle=INK2; ctx.font="400 20px "+SANS;
+  ctx.fillText(fmtD(new Date(card.f))+"  –  "+fmtD(new Date(card.l))+"   ·   busiest day "+nf(card.b[1])+" messages",PAD,246);
+  const n=card.n;
+  imgStatRow(ctx,[[nf(n[0]),"messages"],[nf(n[1]),"people"],[nf(n[2]),"days"],[nf(n[4]),"links"]],PAD,352,(W-PAD*2)/4,62,18);
+  imgSpark(ctx,card.tl,PAD,418,W-PAD*2,96);
   let hl="";
   if(card.a&&card.a.length) hl=card.a[0][0]+"  "+card.a[0][1]+": "+card.a[0][2];
   else if(card.tools&&card.tools.length) hl="Top tools: "+card.tools.slice(0,4).map(t=>t[0]).join(",  ");
-  if(hl){ ctx.fillStyle=INK2; ctx.font="500 20px "+SANS;
-    ctx.fillText(fitText(ctx,hl,20,"500",SANS,W-PAD*2,20),PAD,556); }
+  if(hl){ ctx.fillStyle=INK2; ctx.font="500 20px "+SANS; ctx.fillText(fitText(ctx,hl,20,"500",SANS,W-PAD*2,20),PAD,556); }
+}
+function groupSquare(ctx,card,W,H){
+  const {INK,INK2,BRAND,SANS,MONO,PAD}=IMG;
+  ctx.fillStyle=BRAND; ctx.font="700 18px "+MONO; ctx.fillText("WHATSAPP GROUP REPORT",PAD,168);
+  ctx.fillStyle=INK; ctx.font="700 72px "+SANS;
+  ctx.fillText(fitText(ctx,card.t||"A WhatsApp group",72,"700",SANS,W-PAD*2,34),PAD,246);
+  ctx.fillStyle=INK2; ctx.font="400 22px "+SANS;
+  ctx.fillText(fmtD(new Date(card.f))+"  –  "+fmtD(new Date(card.l)),PAD,292);
+  const n=card.n,colW=(W-PAD*2)/4;
+  imgStatRow(ctx,[[nf(n[0]),"messages"],[nf(n[1]),"people"],[nf(n[2]),"days"],[nf(n[4]),"links"]],PAD,404,colW,66,18);
+  imgStatRow(ctx,[[nf(n[5]),"media"],[nf(n[6]),"questions"],[nf(n[3]),"active days"],[String(n[7]),"per active day"]],PAD,520,colW,46,17);
+  imgSpark(ctx,card.tl,PAD,590,W-PAD*2,120);
+  if(card.a&&card.a.length){
+    ctx.fillStyle=INK2; ctx.font="700 16px "+MONO; ctx.fillText("GROUP AWARDS  🏆",PAD,776);
+    imgAwardGrid(ctx,card.a,PAD,796,W-PAD*2,4);
+  }else{
+    let y=770;
+    if(card.tools&&card.tools.length){ ctx.fillStyle=INK2; ctx.font="500 22px "+SANS;
+      ctx.fillText(fitText(ctx,"Top tools: "+card.tools.slice(0,4).map(t=>t[0]).join(",  "),22,"500",SANS,W-PAD*2,22),PAD,y); y+=44; }
+    if(card.dom&&card.dom.length){ ctx.fillStyle=INK2; ctx.font="500 22px "+SANS;
+      ctx.fillText(fitText(ctx,"Top domains: "+card.dom.slice(0,4).map(d=>d[0]).join(",  "),22,"500",SANS,W-PAD*2,22),PAD,y); }
+  }
+}
 
-  // billboard footer — the invitation + URL travel with the image, since a
-  // static link can't render its own preview.
-  ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.beginPath();
-  ctx.moveTo(PAD,578); ctx.lineTo(W-PAD,578); ctx.stroke();
-  ctx.fillStyle=INK; ctx.font="600 21px "+SANS; ctx.textBaseline="middle";
-  ctx.fillText("Analyze your WhatsApp group — free →",PAD,606);
-  ctx.fillStyle=BRAND; ctx.font="700 21px "+MONO;
-  const site=siteLabel(), sW=ctx.measureText(site).width;
-  ctx.fillText(site,W-PAD-sW,606);
-  ctx.textBaseline="alphabetic";
+/* ---- Person card layouts ---- */
+function personHeader(ctx,card,W,titlePx,eyebrowY,titleY){
+  const {INK,BRAND,SANS,MONO,PAD}=IMG;
+  ctx.fillStyle=BRAND; ctx.font="700 16px "+MONO;
+  ctx.fillText(("MY WHATSAPP STATS"+(card.t?(" · "+card.t):"")).toUpperCase(),PAD,eyebrowY);
+  ctx.fillStyle=INK; ctx.font="700 "+titlePx+"px "+SANS;
+  ctx.fillText(fitText(ctx,card.who||"Me",titlePx,"700",SANS,W-PAD*2-220,30),PAD,titleY);
+  if(card.em){ ctx.font="46px "+SANS; ctx.textAlign="right"; ctx.fillText(card.em.slice(0,6),W-PAD,titleY-2); ctx.textAlign="left"; }
+}
+function personWide(ctx,card,W,H){
+  const {INK2,SANS,PAD}=IMG,n=card.n,colW=(W-PAD*2)/4;
+  personHeader(ctx,card,W,58,150,208);
+  imgStatRow(ctx,[[nf(n[0]),"messages"],[n[1]+"%","of the group"],["#"+n[2],"of "+n[3]+" members"],[nf(n[4]),"active days"]],PAD,344,colW,58,18);
+  imgStatRow(ctx,[[nf(n[5]),"links shared"],[nf(n[6]),"questions"],[nf(n[9]),"chats started"],[String(n[8]),"words / msg"]],PAD,452,colW,42,16);
+  const hl=card.aw&&card.aw.length? card.aw.map(a=>a[0]+" "+a[1]).slice(0,3).join("    ")
+        : "In "+(card.t||"the group")+" · ranked #"+n[2]+" of "+n[3];
+  ctx.fillStyle=INK2; ctx.font="500 20px "+SANS; ctx.fillText(fitText(ctx,hl,20,"500",SANS,W-PAD*2,20),PAD,540);
+}
+function personSquare(ctx,card,W,H){
+  const {INK,INK2,BRAND,SANS,MONO,PAD}=IMG,n=card.n,colW=(W-PAD*2)/4;
+  personHeader(ctx,card,W,72,168,250);
+  ctx.fillStyle=INK2; ctx.font="400 22px "+SANS;
+  ctx.fillText(fmtD(new Date(card.f))+"  –  "+fmtD(new Date(card.l)),PAD,296);
+  imgStatRow(ctx,[[nf(n[0]),"messages"],[n[1]+"%","of the group"],["#"+n[2],"of "+n[3]],[nf(n[4]),"active days"]],PAD,410,colW,60,18);
+  imgStatRow(ctx,[[nf(n[5]),"links"],[nf(n[6]),"questions"],[nf(n[9]),"chats started"],[String(n[8]),"words / msg"]],PAD,530,colW,46,17);
+  if(card.aw&&card.aw.length){
+    ctx.fillStyle=INK2; ctx.font="700 16px "+MONO; ctx.fillText("AWARDS HELD  🏆",PAD,626);
+    imgAwardGrid(ctx,card.aw,PAD,646,W-PAD*2,4);
+  }else{
+    ctx.fillStyle=INK2; ctx.font="500 24px "+SANS;
+    ctx.fillText("Ranked #"+n[2]+" of "+n[3]+" — room to climb 📈",PAD,650);
+    imgSpark(ctx,card.tl,PAD,700,W-PAD*2,150);
+  }
+}
+function drawShareImage(cv,card){
+  const square=SHARE_FMT==="square";
+  const W=square?1080:1200, H=square?1080:630;
+  if(cv.width!==W) cv.width=W;
+  if(cv.height!==H) cv.height=H;
+  const ctx=cv.getContext("2d");
+  imgFrame(ctx,W,H);
+  if(card.k==="p"){ square?personSquare(ctx,card,W,H):personWide(ctx,card,W,H); }
+  else{ square?groupSquare(ctx,card,W,H):groupWide(ctx,card,W,H); }
+  imgBillboard(ctx,W,H);
 }
 function siteLabel(){
   if(!location.host) return "tzippy";
@@ -2267,6 +2321,9 @@ function linkReady(){ return $("#sm-link").dataset.ready==="1" ? $("#sm-link").v
 /* ---- Modal wiring ---- */
 let SHARE_MODE="group";   // "group" | "person"
 let SHARE_SEQ=0;          // guards against out-of-order async packs
+// Square reads better when shared into WhatsApp/IG from a phone; wide is the
+// link-preview / desktop shape. Default to whatever suits the device.
+let SHARE_FMT=(matchMedia&&matchMedia("(max-width:640px), (pointer:coarse)").matches)?"square":"wide";
 
 async function refreshShare(){
   if(!CURRENT) return;
@@ -2309,6 +2366,12 @@ function setShareMode(mode){
   $("#sm-title").textContent=person?"Share your personal stats":"Share your group's stats";
   refreshShare();
 }
+function setShareFmt(fmt){
+  SHARE_FMT=fmt;
+  $("#sm-fmt-wide").classList.toggle("on",fmt==="wide");
+  $("#sm-fmt-square").classList.toggle("on",fmt==="square");
+  drawShareImage($("#sm-canvas"),SHARE_CARD||buildCard(CURRENT.D,{title:$("#sm-name").value,names:false}));
+}
 function openShareModal(){
   if(!CURRENT) return;
   const guess=(CURRENT.name||"").replace(/\s*\(demo data\)$/i,"").trim();
@@ -2316,6 +2379,8 @@ function openShareModal(){
   $("#sm-names").checked=false;
   $("#sm-person").innerHTML=CURRENT.D.S.people.map((p,i)=>
     '<option value="'+i+'">'+esc(p.name)+" · "+nf(p.msgs)+" msgs</option>").join("");
+  $("#sm-fmt-wide").classList.toggle("on",SHARE_FMT==="wide");
+  $("#sm-fmt-square").classList.toggle("on",SHARE_FMT==="square");
   $("#share-modal").classList.add("on");
   setShareMode("group");
 }
@@ -2330,6 +2395,8 @@ $("#sm-names").addEventListener("change",refreshShare);
 $("#sm-person").addEventListener("change",refreshShare);
 $("#sm-mode-group").addEventListener("click",()=>setShareMode("group"));
 $("#sm-mode-person").addEventListener("click",()=>setShareMode("person"));
+$("#sm-fmt-wide").addEventListener("click",()=>setShareFmt("wide"));
+$("#sm-fmt-square").addEventListener("click",()=>setShareFmt("square"));
 
 // Native share sheet — only meaningful where the browser has one (mobile).
 if(navigator.share) $("#sm-native").hidden=false;
