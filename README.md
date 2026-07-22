@@ -26,18 +26,25 @@ analyzer is JavaScript in `index.html`.
 Every report has a **Share** button. It builds a compact highlights card you can
 post anywhere:
 
+- **One-tap to WhatsApp.** A *Share to WhatsApp* button opens a pre-filled
+  message; on mobile the native share sheet sends the card image straight into
+  any app. This is the main loop — the audience is already on WhatsApp.
 - **A link anyone can open.** The card's numbers are compressed and packed into
   the link itself (the `#card=…` fragment), so nothing is uploaded — the same
   property as the analysis. A URL fragment never leaves the browser, and because
   the whole card travels *inside* the link, one link works for any number of
   people at once with nothing to host.
-- **An image for social.** A 1200×630 card (title, headline stats, a sparkline,
-  top tools) you can download and drop into a post.
+- **An image for social.** A 1200×630 card (title, headline stats, a sparkline)
+  with the site URL and *Analyze your own group — free →* burned in, so the
+  invitation travels with the image even where a link won't preview.
 
 The card carries **aggregate figures only by default** — no individual names.
-A per-card toggle adds a top-members leaderboard when you want it, with a clear
-warning that it publishes real names. Opening a shared link shows a clean
-standalone page with a *Analyze your own chat* prompt back to Tzippy.
+A per-card *Include names & awards* toggle adds a members leaderboard plus fun
+superlatives (**Top Yapper, Link Boss, Conversation Starter, Crowd Favorite…**)
+awarded to whoever tops each stat — made for sharing back into your own group and
+tagging the winners. It carries a clear warning that it publishes real names.
+Opening a shared link shows a clean standalone page with an *Analyze your own
+chat* prompt back to Tzippy.
 
 Nothing about sharing changes the privacy story: the recipient's browser decodes
 the link locally, and the original chat is never part of it — only the figures on

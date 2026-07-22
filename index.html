@@ -1,5 +1,15 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tzippy &mdash; WhatsApp analyzer</title>
+<meta name="description" content="Drop in a WhatsApp group export and see the links, tools, builders and unanswered questions inside it. Runs entirely in your browser — nothing is uploaded.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tzippy">
+<meta property="og:title" content="Tzippy — see what's really happening in your WhatsApp group">
+<meta property="og:description" content="Links, tools, builders and the questions nobody answered — analyzed in your browser. Nothing is uploaded. Analyze your own group free.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tzippy — WhatsApp group analyzer">
+<meta name="twitter:description" content="See the links, tools and builders inside your WhatsApp group. Runs in your browser — nothing uploaded.">
+<meta name="theme-color" content="#0f766e">
 
 <style>
 /* ===================================================================
@@ -114,6 +124,8 @@ a{color:inherit}
 .btn-bare{background:transparent; color:var(--ink-2); border:0; padding:0 8px}
 .btn-bare:hover{color:var(--ink)}
 .btn-lg{height:40px; padding:0 20px; font-size:14px}
+.btn-wa{background:#25d366; color:#0a2b16}
+.btn-wa:hover{background:#1fbe5b}
 
 /* ---------- Product mark ---------- */
 .mark{display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:14px;
@@ -591,6 +603,15 @@ table a:hover{text-decoration:underline}
 .sv-lead .rk{flex:none; width:20px; font:600 12px var(--mono); color:var(--ink-3)}
 .sv-lead .nm{flex:1 1 auto; min-width:0; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .sv-lead .val{flex:none; font:600 13px var(--mono); color:var(--ink-2)}
+.sv-awards{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+@media (max-width:560px){.sv-awards{grid-template-columns:1fr}}
+.sv-award{display:flex; align-items:center; gap:11px; padding:11px 13px;
+  background:var(--inset); border:1px solid var(--line); border-radius:var(--r)}
+.sv-award .ic{flex:none; font-size:22px; line-height:1}
+.sv-award .tx{min-width:0}
+.sv-award .ti{font-size:13px; font-weight:600; letter-spacing:-.01em}
+.sv-award .wn{font-size:12px; color:var(--ink-2); margin-top:2px; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap}
 .sv-foot{
   display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
   padding:18px 30px; background:var(--inset); border-top:1px solid var(--line);
@@ -806,8 +827,8 @@ table a:hover{text-decoration:underline}
         <label class="switch">
           <input type="checkbox" id="sm-names">
           <span class="track"></span>
-          <span class="txt"><b>Include a top-members leaderboard</b>
-            <span>Off by default. Adds real names and their message counts to the card.</span></span>
+          <span class="txt"><b>Include names &amp; awards</b>
+            <span>Off by default. Adds a members leaderboard and fun awards (Top Yapper, Link Boss…) — great for sharing back into your own group.</span></span>
         </label>
 
         <div class="priv-note" id="sm-note">
@@ -818,11 +839,26 @@ table a:hover{text-decoration:underline}
         </div>
       </div>
 
+      <div class="share-actions">
+        <button class="btn btn-wa" id="sm-wa">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.8 14.2c-.24.68-1.4 1.3-1.94 1.34-.5.05-1.13.07-1.82-.11a10.3 10.3 0 0 1-1.65-.61 8.03 8.03 0 0 1-3.08-2.72c-.23-.3-.9-1.2-.9-2.28 0-1.09.57-1.62.77-1.84a.8.8 0 0 1 .58-.27h.42c.13 0 .32-.05.5.38.18.44.62 1.52.67 1.63.05.11.08.24 0 .38-.35.7-.73.67-.53 1.01.75 1.29 1.5 1.74 2.64 2.31.2.1.3.08.42-.05.11-.13.48-.56.6-.75.13-.2.25-.16.42-.1.18.07 1.13.54 1.32.63.2.1.32.14.37.22.05.08.05.47-.19 1.15Z"/></svg>
+          Share to WhatsApp
+        </button>
+        <button class="btn btn-primary" id="sm-native" hidden>
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+               stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="3.5" r="1.8"/><circle cx="4" cy="8" r="1.8"/><circle cx="12" cy="12.5" r="1.8"/>
+            <path d="M5.6 7.1l4.8-2.7M5.6 8.9l4.8 2.7"/></svg>
+          Share…
+        </button>
+      </div>
+
       <div class="field">
-        <label for="sm-link">Shareable link</label>
+        <label for="sm-link">Or copy the link</label>
         <div class="linkrow">
           <input type="text" id="sm-link" readonly>
-          <button class="btn btn-primary" id="sm-copy" style="flex:none">Copy link</button>
+          <button class="btn btn-ghost" id="sm-copy" style="flex:none">Copy</button>
         </div>
       </div>
 
@@ -1935,9 +1971,34 @@ function buildCard(D,opts){
     sig:SIGDEF.map(([label])=>[label,(D.signals[label]||[]).length]).filter(s=>s[1]>0)
   };
   // Names are opt-in per card. Off = nothing that identifies a person.
-  if(opts.names)
+  if(opts.names){
     card.p=S.people.slice(0,5).map(p=>[p.name,p.msgs,Math.round(1000*p.msgs/O.total)/10]);
+    card.a=computeAwards(S.people);
+  }
   return card;
+}
+
+// Superlative "awards" — the tag-bait. Each goes to whoever tops a stat.
+// Names-gated (they identify a person), so they ride the names toggle.
+const AWARD_DEFS=[
+  ["🏆","Top Yapper",     p=>p.msgs,      v=>nf(v)+" messages"],
+  ["🔗","Link Boss",      p=>p.links,     v=>nf(v)+" links shared"],
+  ["🎬","Conversation Starter",p=>p.started,v=>nf(v)+" started"],
+  ["🧲","Crowd Favorite", p=>p.gotReplies,v=>nf(v)+" replies drawn"],
+  ["❓","Chief Questioner",p=>p.questions, v=>nf(v)+" questions"],
+  ["📝","The Essayist",   p=>p.avgWords,  v=>v+" words/msg"],
+  ["📅","Never Misses",   p=>p.days.size, v=>nf(v)+" active days"],
+  ["📎","Media Mogul",    p=>p.media,     v=>nf(v)+" media & files"]
+];
+function computeAwards(people){
+  if(!people.length) return [];
+  const out=[];
+  for(const [icon,title,val,fmt] of AWARD_DEFS){
+    let best=null;
+    for(const p of people){ const v=val(p); if(v>0&&(!best||v>best.v)) best={p,v}; }
+    if(best) out.push([icon,title,best.p.name,fmt(best.v)]);
+  }
+  return out;
 }
 
 /* ---- Shared-page renderer (what a recipient sees) ---- */
@@ -1968,6 +2029,10 @@ function renderCardView(card){
     chips(card.tools,t=>'<span class="chip">'+esc(t[0])+'<i>'+nf(t[1])+'</i></span>')+'</div>':"";
   const dom=card.dom&&card.dom.length?'<div class="sv-block"><h4>Top domains shared</h4>'+
     chips(card.dom,d=>'<span class="chip">'+esc(d[0])+'<i>'+nf(d[1])+'</i></span>')+'</div>':"";
+  const awards=card.a&&card.a.length?'<div class="sv-block"><h4>Group awards 🏆</h4><div class="sv-awards">'+
+    card.a.map(a=>'<div class="sv-award"><span class="ic">'+a[0]+'</span>'+
+      '<div class="tx"><div class="ti">'+esc(a[1])+'</div>'+
+      '<div class="wn">'+esc(a[2])+' · '+esc(a[3])+'</div></div></div>').join("")+'</div></div>':"";
   const lead=card.p&&card.p.length?'<div class="sv-block"><h4>Most active members</h4>'+
     card.p.map((p,i)=>'<div class="sv-lead"><span class="rk">'+(i+1)+'</span>'+
       '<span class="nm">'+esc(p[0])+'</span><span class="val">'+nf(p[1])+' msgs · '+p[2]+'%</span></div>')
@@ -1976,7 +2041,7 @@ function renderCardView(card){
     '<div class="sv-title">'+esc(card.t||"A WhatsApp group")+'</div>'+
     '<div class="sv-range">'+fmtD(first)+' – '+fmtD(last)+
     ' · busiest day '+nf(card.b[1])+' messages</div></div>'+
-    '<div class="sv-body"><div class="sv-stats">'+stats+'</div>'+spark+tools+dom+lead+'</div>'+
+    '<div class="sv-body"><div class="sv-stats">'+stats+'</div>'+spark+awards+tools+dom+lead+'</div>'+
     '<div class="sv-foot"><span class="made">Made with <b>Tzippy</b> — analyzed in-browser, '+
     'nothing uploaded</span><a class="btn btn-primary" href="./" id="sv-cta">Analyze your own chat →</a></div>';
 }
@@ -2048,17 +2113,38 @@ function drawShareImage(cv,card){
     ctx.strokeStyle=BRAND; ctx.lineWidth=3; ctx.lineJoin="round"; ctx.stroke();
   }
 
-  // one contextual highlight line
+  // one contextual highlight line — a headline award if names are on
   let hl="";
-  if(card.p&&card.p.length) hl="Most active: "+card.p.slice(0,3).map(p=>p[0]+" ("+nf(p[1])+")").join(",  ");
+  if(card.a&&card.a.length) hl=card.a[0][0]+"  "+card.a[0][1]+": "+card.a[0][2];
   else if(card.tools&&card.tools.length) hl="Top tools: "+card.tools.slice(0,4).map(t=>t[0]).join(",  ");
-  if(hl){ ctx.fillStyle=INK2; ctx.font="500 19px "+SANS;
-    ctx.fillText(fitText(ctx,hl,19,"500",SANS,W-PAD*2,19),PAD,562); }
+  if(hl){ ctx.fillStyle=INK2; ctx.font="500 20px "+SANS;
+    ctx.fillText(fitText(ctx,hl,20,"500",SANS,W-PAD*2,20),PAD,556); }
 
-  // footer
-  ctx.fillStyle=INK3; ctx.font="400 16px "+SANS;
-  ctx.fillText("Made with Tzippy — WhatsApp exports analyzed in your browser. Nothing is uploaded.",PAD,600);
+  // billboard footer — the invitation + URL travel with the image, since a
+  // static link can't render its own preview.
+  ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(PAD,578); ctx.lineTo(W-PAD,578); ctx.stroke();
+  ctx.fillStyle=INK; ctx.font="600 21px "+SANS; ctx.textBaseline="middle";
+  ctx.fillText("Analyze your WhatsApp group — free →",PAD,606);
+  ctx.fillStyle=BRAND; ctx.font="700 21px "+MONO;
+  const site=siteLabel(), sW=ctx.measureText(site).width;
+  ctx.fillText(site,W-PAD-sW,606);
+  ctx.textBaseline="alphabetic";
 }
+function siteLabel(){
+  if(!location.host) return "tzippy";
+  return (location.host+location.pathname.replace(/index\.html$/,"").replace(/\/$/,"")) || location.host;
+}
+
+/* ---- Outbound share (WhatsApp / native sheet) ---- */
+function shareText(){
+  const c=SHARE_CARD; if(!c) return "See what's inside your WhatsApp group 👉";
+  const t=c.t?('“'+c.t+'”'):"Our WhatsApp group";
+  return "👀 "+t+" by the numbers: "+nf(c.n[0])+" messages · "+c.n[1]+
+    " people · "+nf(c.n[4])+" links shared.\nSee what's inside yours 👉";
+}
+function canvasBlob(){ return new Promise(res=>$("#sm-canvas").toBlob(b=>res(b),"image/png")); }
+function linkReady(){ return $("#sm-link").dataset.ready==="1" ? $("#sm-link").value : ""; }
 
 /* ---- Modal wiring ---- */
 async function refreshShare(){
@@ -2098,6 +2184,28 @@ $("#share-modal").addEventListener("click",e=>{ if(e.target===$("#share-modal"))
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeShareModal(); });
 $("#sm-name").addEventListener("input",refreshShare);
 $("#sm-names").addEventListener("change",refreshShare);
+
+// Native share sheet — only meaningful where the browser has one (mobile).
+if(navigator.share) $("#sm-native").hidden=false;
+
+$("#sm-wa").addEventListener("click",()=>{
+  const link=linkReady(); if(!link) return;
+  window.open("https://wa.me/?text="+encodeURIComponent(shareText()+" "+link),"_blank","noopener");
+});
+$("#sm-native").addEventListener("click",async()=>{
+  const link=linkReady(); if(!link) return;
+  const text=shareText()+" "+link;
+  try{
+    const blob=await canvasBlob();
+    const file=new File([blob],"tzippy-group-stats.png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],text});
+      return;
+    }
+  }catch(e){ if(e&&e.name==="AbortError") return; }
+  try{ await navigator.share({title:"Tzippy",text:shareText(),url:link}); }
+  catch(e){ /* user dismissed */ }
+});
 
 $("#sm-copy").addEventListener("click",async()=>{
   const inp=$("#sm-link"),btn=$("#sm-copy");
