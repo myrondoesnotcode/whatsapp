@@ -38,13 +38,22 @@ post anywhere:
   with the site URL and *Analyze your own group — free →* burned in, so the
   invitation travels with the image even where a link won't preview.
 
-The card carries **aggregate figures only by default** — no individual names.
-A per-card *Include names & awards* toggle adds a members leaderboard plus fun
-superlatives (**Top Yapper, Link Boss, Conversation Starter, Crowd Favorite…**)
-awarded to whoever tops each stat — made for sharing back into your own group and
-tagging the winners. It carries a clear warning that it publishes real names.
-Opening a shared link shows a clean standalone page with an *Analyze your own
-chat* prompt back to Tzippy.
+Two kinds of card, chosen at the top of the dialog:
+
+- **Group card** — the whole group at a glance. Carries **aggregate figures only
+  by default** (no names). A per-card *Include names & awards* toggle adds a
+  members leaderboard plus fun superlatives (**Top Yapper, Link Boss,
+  Conversation Starter, Crowd Favorite…**) given to whoever tops each stat — made
+  for sharing back into your own group and tagging the winners, with a clear
+  warning that it publishes real names.
+- **Personal card** — one member's own stats: message share, rank in the group,
+  active days, their emoji signature, and any awards they hold. Identity content
+  is the most-shared kind; pick yourself and post it.
+
+Opening any shared link shows a clean standalone page with an *Analyze your own
+chat* prompt back to Tzippy. A pasted link also shows a proper title, description
+and preview image (`og.png`) on social — the one thing baked at build time rather
+than per-card, since a static page can't render a preview from a URL fragment.
 
 Nothing about sharing changes the privacy story: the recipient's browser decodes
 the link locally, and the original chat is never part of it — only the figures on

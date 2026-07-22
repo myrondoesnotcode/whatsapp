@@ -4,11 +4,17 @@
 <meta name="description" content="Drop in a WhatsApp group export and see the links, tools, builders and unanswered questions inside it. Runs entirely in your browser — nothing is uploaded.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tzippy">
+<meta property="og:url" content="https://myrondoesnotcode.github.io/whatsapp/">
 <meta property="og:title" content="Tzippy — see what's really happening in your WhatsApp group">
 <meta property="og:description" content="Links, tools, builders and the questions nobody answered — analyzed in your browser. Nothing is uploaded. Analyze your own group free.">
+<meta property="og:image" content="https://myrondoesnotcode.github.io/whatsapp/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Tzippy — WhatsApp group analyzer">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Tzippy — WhatsApp group analyzer">
 <meta name="twitter:description" content="See the links, tools and builders inside your WhatsApp group. Runs in your browser — nothing uploaded.">
+<meta name="twitter:image" content="https://myrondoesnotcode.github.io/whatsapp/og.png">
 <meta name="theme-color" content="#0f766e">
 
 <style>
@@ -520,6 +526,14 @@ table a:hover{text-decoration:underline}
 }
 .modal-head .x:hover{background:var(--inset); color:var(--ink)}
 .modal-body{padding:16px 18px; display:flex; flex-direction:column; gap:14px}
+.seg{display:flex; gap:3px; background:var(--inset); padding:3px; border-radius:var(--r-sm); width:100%}
+.seg-btn{flex:1 1 0; padding:8px 12px; cursor:pointer; background:transparent; border:0;
+  border-radius:3px; color:var(--ink-2); font:500 13px/1 var(--sans); transition:background .12s,color .12s}
+.seg-btn:hover{color:var(--ink)}
+.seg-btn.on{background:var(--panel); color:var(--ink); box-shadow:var(--sh-1)}
+.field select{width:100%; height:34px; padding:0 11px; border:1px solid var(--line-2);
+  border-radius:var(--r-sm); background:var(--panel); color:var(--ink); font:400 13px var(--sans); cursor:pointer}
+.field select:focus{outline:none; border-color:var(--brand)}
 
 /* Live preview of the card */
 .share-prev{
@@ -612,6 +626,8 @@ table a:hover{text-decoration:underline}
 .sv-award .ti{font-size:13px; font-weight:600; letter-spacing:-.01em}
 .sv-award .wn{font-size:12px; color:var(--ink-2); margin-top:2px; overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap}
+.sv-emoji{font-size:34px; letter-spacing:6px; line-height:1.2}
+.sv-noawards{font-size:13.5px; color:var(--ink-2); margin:0}
 .sv-foot{
   display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
   padding:18px 30px; background:var(--inset); border-top:1px solid var(--line);
@@ -816,6 +832,11 @@ table a:hover{text-decoration:underline}
       <button class="x" id="sm-close" aria-label="Close">&times;</button>
     </div>
     <div class="modal-body">
+      <div class="seg" role="tablist">
+        <button class="seg-btn on" id="sm-mode-group" role="tab">Group card</button>
+        <button class="seg-btn" id="sm-mode-person" role="tab">My personal card</button>
+      </div>
+
       <div class="share-prev"><canvas id="sm-canvas" width="1200" height="630"></canvas></div>
 
       <div class="share-opts">
@@ -824,7 +845,12 @@ table a:hover{text-decoration:underline}
           <input type="text" id="sm-name" maxlength="60" placeholder="e.g. deploy TLV">
         </div>
 
-        <label class="switch">
+        <div class="field" id="sm-person-field" hidden>
+          <label for="sm-person">Whose stats?</label>
+          <select id="sm-person"></select>
+        </div>
+
+        <label class="switch" id="sm-names-row">
           <input type="checkbox" id="sm-names">
           <span class="track"></span>
           <span class="txt"><b>Include names &amp; awards</b>
@@ -2001,6 +2027,20 @@ function computeAwards(people){
   return out;
 }
 
+// A single member's own stats — inherently named (it's "my" card).
+function buildPersonCard(D,idx,title){
+  const S=D.S,O=S.overview,p=S.people[Math.max(0,Math.min(idx,S.people.length-1))]||S.people[0];
+  const mine=computeAwards(S.people).filter(a=>a[2]===p.name).map(a=>[a[0],a[1],a[3]]);
+  return {
+    v:1, k:"p", t:(title||"").trim().slice(0,60), who:p.name,
+    n:[p.msgs, Math.round(1000*p.msgs/O.total)/10, S.people.indexOf(p)+1, S.people.length,
+       p.days.size, p.links, p.questions, p.media, p.avgWords, p.started, p.gotReplies],
+    em:p.sig||"",
+    aw:mine,
+    f:O.first.getTime(), l:O.last.getTime()
+  };
+}
+
 /* ---- Shared-page renderer (what a recipient sees) ---- */
 function sparkSVG(counts){
   const W=600,H=74,n=counts.length; if(!n) return "";
@@ -2017,6 +2057,7 @@ function sparkSVG(counts){
     'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
 }
 function renderCardView(card){
+  if(card.k==="p") return renderPersonView(card);
   const n=card.n,first=new Date(card.f),last=new Date(card.l);
   const stat=(v,l)=>'<div class="sv-stat"><div class="v">'+esc(v)+'</div><div class="l">'+esc(l)+'</div></div>';
   const stats=stat(nf(n[0]),"messages")+stat(nf(n[1]),"people")+
@@ -2045,6 +2086,28 @@ function renderCardView(card){
     '<div class="sv-foot"><span class="made">Made with <b>Tzippy</b> — analyzed in-browser, '+
     'nothing uploaded</span><a class="btn btn-primary" href="./" id="sv-cta">Analyze your own chat →</a></div>';
 }
+function renderPersonView(card){
+  const n=card.n;
+  const stat=(v,l)=>'<div class="sv-stat"><div class="v">'+esc(v)+'</div><div class="l">'+esc(l)+'</div></div>';
+  const stats=stat(nf(n[0]),"messages")+stat(n[1]+"%","of the group")+
+    stat("#"+n[2],"of "+n[3]+" members")+stat(nf(n[4]),"active days")+
+    stat(nf(n[5]),"links shared")+stat(nf(n[6]),"questions asked")+
+    stat(nf(n[9]),"chats started")+stat(nf(n[8]),"words / message");
+  const emoji=card.em?'<div class="sv-block"><h4>Emoji signature</h4>'+
+    '<div class="sv-emoji">'+esc(card.em)+'</div></div>':"";
+  const awards=card.aw&&card.aw.length?'<div class="sv-block"><h4>Awards held 🏆</h4><div class="sv-awards">'+
+    card.aw.map(a=>'<div class="sv-award"><span class="ic">'+a[0]+'</span>'+
+      '<div class="tx"><div class="ti">'+esc(a[1])+'</div>'+
+      '<div class="wn">'+esc(a[2])+'</div></div></div>').join("")+'</div></div>':
+    '<div class="sv-block"><p class="sv-noawards">No top-spot awards this time — plenty of room to climb 📈</p></div>';
+  const inGroup=card.t?(" in "+esc(card.t)):"";
+  return '<div class="sv-hero"><div class="sv-eyebrow">My WhatsApp stats'+inGroup+'</div>'+
+    '<div class="sv-title">'+esc(card.who)+'</div>'+
+    '<div class="sv-range">'+fmtD(new Date(card.f))+' – '+fmtD(new Date(card.l))+'</div></div>'+
+    '<div class="sv-body"><div class="sv-stats">'+stats+'</div>'+emoji+awards+'</div>'+
+    '<div class="sv-foot"><span class="made">Made with <b>Tzippy</b> — analyzed in-browser, '+
+    'nothing uploaded</span><a class="btn btn-primary" href="./" id="sv-cta">Analyze your own chat →</a></div>';
+}
 
 /* ---- Share image (1200×630, drawn on a canvas) ---- */
 function roundRect(ctx,x,y,w,h,r){
@@ -2061,7 +2124,57 @@ function fitText(ctx,text,px,weight,family,maxW,minPx){
   }
   return text;
 }
+// Shared image palette / fonts / chrome so group + person cards match.
+const IMG={INK:"#15171c",INK2:"#585f6d",INK3:"#8a91a0",BRAND:"#0f766e",LINE:"#e7e9ee",SOFT:"#e6f4f1",
+  SANS:'-apple-system,"Segoe UI",system-ui,"Helvetica Neue",sans-serif',
+  MONO:'"SF Mono",ui-monospace,Menlo,Consolas,monospace', PAD:64};
+function imgWordmark(ctx){
+  const {INK,SANS,PAD}=IMG;
+  ctx.fillStyle=INK; roundRect(ctx,PAD,52,34,34,8); ctx.fill();
+  ctx.fillStyle="#fff";
+  ctx.fillRect(PAD+8,52+18,4.5,9); ctx.fillRect(PAD+15,52+12,4.5,15); ctx.fillRect(PAD+22,52+8,4.5,19);
+  ctx.fillStyle=INK; ctx.textBaseline="middle"; ctx.font="600 25px "+SANS;
+  ctx.fillText("Tzippy",PAD+48,52+19); ctx.textBaseline="alphabetic";
+}
+function imgBillboard(ctx,W){
+  const {INK,BRAND,LINE,SANS,MONO,PAD}=IMG;
+  ctx.strokeStyle=LINE; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(PAD,578); ctx.lineTo(W-PAD,578); ctx.stroke();
+  ctx.fillStyle=INK; ctx.font="600 21px "+SANS; ctx.textBaseline="middle";
+  ctx.fillText("Analyze your WhatsApp group — free →",PAD,606);
+  ctx.fillStyle=BRAND; ctx.font="700 21px "+MONO;
+  const site=siteLabel(), sW=ctx.measureText(site).width;
+  ctx.fillText(site,W-PAD-sW,606); ctx.textBaseline="alphabetic";
+}
+function drawPersonImage(cv,card){
+  const ctx=cv.getContext("2d"),W=1200,H=630,{INK,INK2,BRAND,SANS,MONO,PAD}=IMG;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=IMG.LINE; ctx.lineWidth=2; ctx.strokeRect(1,1,W-2,H-2);
+  ctx.fillStyle=BRAND; ctx.fillRect(0,0,8,H);
+  imgWordmark(ctx);
+  ctx.fillStyle=BRAND; ctx.font="700 16px "+MONO;
+  ctx.fillText(("MY WHATSAPP STATS"+(card.t?(" · "+card.t):"")).toUpperCase(),PAD,150);
+  ctx.fillStyle=INK; ctx.fillText(fitText(ctx,card.who||"Me",58,"700",SANS,W-PAD*2-260,30),PAD,208);
+  // emoji signature, right-aligned in the header
+  if(card.em){ ctx.font="46px "+SANS; ctx.textAlign="right"; ctx.fillText(card.em.slice(0,6),W-PAD,206); ctx.textAlign="left"; }
+  const n=card.n,cells=[[nf(n[0]),"messages"],[n[1]+"%","of the group"],["#"+n[2],"of "+n[3]+" members"],[nf(n[4]),"active days"]];
+  const colW=(W-PAD*2)/4;
+  cells.forEach((c,i)=>{const x=PAD+i*colW;
+    ctx.fillStyle=INK; ctx.font="700 60px "+SANS; ctx.fillText(fitText(ctx,c[0],60,"700",SANS,colW-14,34),x,344);
+    ctx.fillStyle=INK2; ctx.font="500 18px "+SANS; ctx.fillText(c[1],x,378);});
+  const cells2=[[nf(n[5]),"links shared"],[nf(n[6]),"questions"],[nf(n[9]),"chats started"],[n[8],"words / msg"]];
+  cells2.forEach((c,i)=>{const x=PAD+i*colW;
+    ctx.fillStyle=INK; ctx.font="700 42px "+SANS; ctx.fillText(fitText(ctx,c[0],42,"700",SANS,colW-14,24),x,452);
+    ctx.fillStyle=INK2; ctx.font="500 16px "+SANS; ctx.fillText(c[1],x,480);});
+  let hl=card.aw&&card.aw.length? card.aw.map(a=>a[0]+" "+a[1]).slice(0,3).join("    ")
+        : "In "+(card.t||"the group")+" · ranked #"+n[2]+" of "+n[3];
+  ctx.fillStyle=INK2; ctx.font="500 20px "+SANS;
+  ctx.fillText(fitText(ctx,hl,20,"500",SANS,W-PAD*2,20),PAD,540);
+  imgBillboard(ctx,W);
+}
 function drawShareImage(cv,card){
+  if(card.k==="p") return drawPersonImage(cv,card);
   const ctx=cv.getContext("2d"),W=1200,H=630;
   const INK="#15171c",INK2="#585f6d",INK3="#8a91a0",BRAND="#0f766e",LINE="#e7e9ee",SOFT="#e6f4f1";
   const SANS='-apple-system,"Segoe UI",system-ui,"Helvetica Neue",sans-serif';
@@ -2139,6 +2252,11 @@ function siteLabel(){
 /* ---- Outbound share (WhatsApp / native sheet) ---- */
 function shareText(){
   const c=SHARE_CARD; if(!c) return "See what's inside your WhatsApp group 👉";
+  if(c.k==="p"){
+    return "🏅 My WhatsApp stats"+(c.t?(" in “"+c.t+"”"):"")+": "+nf(c.n[0])+" messages, ranked #"+
+      c.n[2]+" of "+c.n[3]+(c.aw&&c.aw.length?(" · "+c.aw[0][1]+" "+c.aw[0][0]):"")+
+      ".\nSee where you rank 👉";
+  }
   const t=c.t?('“'+c.t+'”'):"Our WhatsApp group";
   return "👀 "+t+" by the numbers: "+nf(c.n[0])+" messages · "+c.n[1]+
     " people · "+nf(c.n[4])+" links shared.\nSee what's inside yours 👉";
@@ -2147,34 +2265,59 @@ function canvasBlob(){ return new Promise(res=>$("#sm-canvas").toBlob(b=>res(b),
 function linkReady(){ return $("#sm-link").dataset.ready==="1" ? $("#sm-link").value : ""; }
 
 /* ---- Modal wiring ---- */
+let SHARE_MODE="group";   // "group" | "person"
+let SHARE_SEQ=0;          // guards against out-of-order async packs
+
 async function refreshShare(){
   if(!CURRENT) return;
+  const seq=++SHARE_SEQ;
+  $("#sm-link").dataset.ready="";   // invalidate until the new link is packed
   const title=$("#sm-name").value;
-  const names=$("#sm-names").checked;
-  SHARE_CARD=buildCard(CURRENT.D,{title,names});
-  drawShareImage($("#sm-canvas"),SHARE_CARD);
   const note=$("#sm-note"),txt=$("#sm-note-txt");
-  if(names){
-    note.classList.add("warn-tone");
-    txt.textContent="This card will show real names and message counts. Only share where the group is comfortable being identified.";
-  }else{
+  if(SHARE_MODE==="person"){
+    const idx=+($("#sm-person").value||0);
+    SHARE_CARD=buildPersonCard(CURRENT.D,idx,title);
     note.classList.remove("warn-tone");
-    txt.textContent="Aggregate figures only — no individual names. Safe to post publicly.";
+    txt.textContent="Your own stats in this group. The card names only the member you pick — no one else.";
+  }else{
+    const names=$("#sm-names").checked;
+    SHARE_CARD=buildCard(CURRENT.D,{title,names});
+    if(names){
+      note.classList.add("warn-tone");
+      txt.textContent="This card will show real names and message counts. Only share where the group is comfortable being identified.";
+    }else{
+      note.classList.remove("warn-tone");
+      txt.textContent="Aggregate figures only — no individual names. Safe to post publicly.";
+    }
   }
+  drawShareImage($("#sm-canvas"),SHARE_CARD);
   try{
     const token=await packCard(SHARE_CARD);
+    if(seq!==SHARE_SEQ) return;   // a newer refresh superseded this one
     const link=location.href.split("#")[0]+"#card="+token;
     $("#sm-link").value=link;
     $("#sm-link").dataset.ready="1";
-  }catch(e){ $("#sm-link").value="Couldn't build a link in this browser."; }
+  }catch(e){ if(seq===SHARE_SEQ) $("#sm-link").value="Couldn't build a link in this browser."; }
+}
+function setShareMode(mode){
+  SHARE_MODE=mode;
+  const person=mode==="person";
+  $("#sm-mode-group").classList.toggle("on",!person);
+  $("#sm-mode-person").classList.toggle("on",person);
+  $("#sm-person-field").hidden=!person;
+  $("#sm-names-row").hidden=person;   // personal cards are inherently named
+  $("#sm-title").textContent=person?"Share your personal stats":"Share your group's stats";
+  refreshShare();
 }
 function openShareModal(){
   if(!CURRENT) return;
   const guess=(CURRENT.name||"").replace(/\s*\(demo data\)$/i,"").trim();
   $("#sm-name").value=guess;
   $("#sm-names").checked=false;
+  $("#sm-person").innerHTML=CURRENT.D.S.people.map((p,i)=>
+    '<option value="'+i+'">'+esc(p.name)+" · "+nf(p.msgs)+" msgs</option>").join("");
   $("#share-modal").classList.add("on");
-  refreshShare();
+  setShareMode("group");
 }
 function closeShareModal(){ $("#share-modal").classList.remove("on"); }
 
@@ -2184,6 +2327,9 @@ $("#share-modal").addEventListener("click",e=>{ if(e.target===$("#share-modal"))
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeShareModal(); });
 $("#sm-name").addEventListener("input",refreshShare);
 $("#sm-names").addEventListener("change",refreshShare);
+$("#sm-person").addEventListener("change",refreshShare);
+$("#sm-mode-group").addEventListener("click",()=>setShareMode("group"));
+$("#sm-mode-person").addEventListener("click",()=>setShareMode("person"));
 
 // Native share sheet — only meaningful where the browser has one (mobile).
 if(navigator.share) $("#sm-native").hidden=false;
@@ -2220,7 +2366,8 @@ $("#sm-img").addEventListener("click",()=>{
   $("#sm-canvas").toBlob(blob=>{
     if(!blob) return;
     const url=URL.createObjectURL(blob),a=document.createElement("a");
-    const base=(SHARE_CARD&&SHARE_CARD.t?SHARE_CARD.t:"whatsapp").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"whatsapp";
+    const raw=SHARE_CARD?(SHARE_CARD.k==="p"?SHARE_CARD.who:SHARE_CARD.t):"";
+    const base=(raw||"whatsapp").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"whatsapp";
     a.href=url; a.download="tzippy-"+base+".png"; document.body.appendChild(a); a.click();
     a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
     const was=btn.textContent; btn.textContent="Saved ✓"; setTimeout(()=>{btn.textContent=was;},1400);
