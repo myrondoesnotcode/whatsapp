@@ -663,6 +663,143 @@ table a:hover{text-decoration:underline}
 .sv-foot .made{font-size:12.5px; color:var(--ink-3)}
 .sv-foot .made b{color:var(--ink-2); font-weight:600}
 .sv-disclaim{text-align:center; font-size:11.5px; color:var(--ink-3); margin-top:20px; line-height:1.5}
+
+/* ===================================================================
+   LANDING REDESIGN  (all rules namespaced `lp-` so they never collide
+   with the report/app styles above — e.g. the app's own .heat/.hero/
+   .feats and the global [data-l] blue scale). The landing borrows the
+   report's own visual language: teal GitHub-contribution scale, mono
+   labels, tabular numerals.
+   =================================================================== */
+.lp-hero-wrap{position:relative; overflow:hidden; border-bottom:1px solid var(--line)}
+.lp-glow{position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(600px 420px at 78% 16%, color-mix(in srgb,var(--brand) 18%,transparent), transparent 70%),
+    radial-gradient(760px 520px at 10% 4%, color-mix(in srgb,var(--brand) 9%,transparent), transparent 72%);}
+.lp-hero{position:relative; z-index:1; max-width:1120px; margin:0 auto; padding:60px 24px 58px;
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.02fr); gap:52px; align-items:center}
+.lp-cta{display:flex; flex-direction:column; align-items:flex-start}
+/* Let both hero columns shrink below their content's intrinsic width, so the
+   no-wrap preview title/tiles can't push the layout past a phone's viewport. */
+.lp-cta,.lp-preview{min-width:0}
+.lp-eyebrow{display:inline-flex; align-items:center; gap:8px; height:26px; padding:0 12px;
+  border:1px solid var(--line-2); border-radius:999px;
+  background:color-mix(in srgb,var(--panel) 70%,transparent);
+  font:500 10.5px/1 var(--mono); letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-2); margin-bottom:22px}
+.lp-eyebrow i{width:6px; height:6px; border-radius:50%; background:var(--brand); flex:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 26%,transparent)}
+.lp-h1{font-size:clamp(32px,4.4vw,50px); line-height:1.05; letter-spacing:-.038em;
+  text-wrap:balance; margin-bottom:16px}
+.lp-h1 .hl{background:linear-gradient(103deg,var(--gh3),var(--brand));
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.lp-lede{font-size:16px; line-height:1.6; color:var(--ink-2); max-width:50ch; text-wrap:balance}
+
+/* dropzone reused from #drop, restyled for the column + a teal glow/pulse */
+.lp-hero .dz-wrap{max-width:520px; width:100%; margin:28px 0 0; padding:0}
+.lp-hero .dz-under,.lp-hero .dz-alt{justify-content:flex-start; text-align:left}
+#drop .ic{background:var(--brand-soft); color:var(--brand); width:44px; height:44px; position:relative}
+#drop .ic::after{content:""; position:absolute; inset:0; border-radius:50%; background:var(--brand);
+  opacity:.16; animation:lp-pulse 2.4s ease-out infinite}
+@keyframes lp-pulse{0%{transform:scale(1); opacity:.3}70%{transform:scale(1.5); opacity:0}100%{opacity:0}}
+#drop:hover{border-color:var(--brand); background:var(--brand-soft);
+  box-shadow:0 14px 44px -16px color-mix(in srgb,var(--brand) 60%,transparent)}
+.lp-hero .linkbtn{color:var(--brand); font-weight:600;
+  text-decoration-color:color-mix(in srgb,var(--brand) 45%,transparent)}
+.lp-hero .linkbtn:hover{color:var(--brand)}
+
+/* framed report preview — the signature element */
+.lp-preview{position:relative}
+.lp-preview::before{content:""; position:absolute; inset:-26px -18px; z-index:0; border-radius:24px;
+  background:radial-gradient(closest-side, color-mix(in srgb,var(--brand) 14%,transparent), transparent)}
+.lp-win{position:relative; z-index:1; background:var(--panel); border:1px solid var(--line-2);
+  border-radius:14px; box-shadow:var(--sh-3); overflow:hidden;
+  transform:perspective(1500px) rotateY(-4deg) rotateX(1.5deg); transform-origin:center left}
+.lp-winbar{display:flex; align-items:center; gap:7px; padding:11px 14px;
+  border-bottom:1px solid var(--line); background:var(--inset)}
+.lp-winbar i{width:10px; height:10px; border-radius:50%; background:var(--line-2); flex:none}
+.lp-winbar .u{margin-left:10px; min-width:0; font:400 11px/1 var(--mono); color:var(--ink-3);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.lp-winbody{padding:16px}
+.lp-ptiles{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px}
+.lp-ptile{background:var(--inset); border:1px solid var(--line); border-radius:var(--r); padding:9px 10px}
+.lp-ptile .v{font-size:19px; font-weight:600; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1.1}
+.lp-ptile .l{font-size:10px; color:var(--ink-3); margin-top:2px}
+.lp-plabel{font:500 9px/1 var(--mono); letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); margin:0 0 8px}
+.lp-heat{display:grid; grid-template-columns:20px repeat(18,1fr); gap:3px; align-items:center; margin-bottom:14px}
+.lp-heat .d{font:400 8px/1 var(--mono); color:var(--ink-3); text-align:right; padding-right:4px}
+.lp-heat .c{aspect-ratio:1; border-radius:2px; background:var(--gh0)}
+.lp-heat .c.l1{background:var(--gh1)} .lp-heat .c.l2{background:var(--gh2)}
+.lp-heat .c.l3{background:var(--gh3)} .lp-heat .c.l4{background:var(--gh4)}
+.lp-psplit{display:grid; grid-template-columns:1.2fr 1fr; gap:14px}
+.lp-pspark{width:100%; height:52px; display:block}
+.lp-plead{display:flex; align-items:center; gap:9px; padding:5px 0; border-top:1px solid var(--line)}
+.lp-plead:first-of-type{border-top:0}
+.lp-plead .rk{width:14px; font:600 10px/1 var(--mono); color:var(--ink-3)}
+.lp-pav{width:20px; height:20px; border-radius:5px; display:grid; place-items:center; color:#fff; font:600 9px/1 var(--sans); flex:none}
+.lp-plead .nm{flex:1; min-width:0; font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.lp-plead .vl{font:600 10.5px/1 var(--mono); color:var(--ink-2)}
+@media (max-width:900px){
+  .lp-hero{grid-template-columns:1fr; gap:38px; padding:44px 22px 46px}
+  .lp-cta{align-items:center; text-align:center}
+  .lp-hero .dz-under,.lp-hero .dz-alt{justify-content:center; text-align:center}
+  .lp-hero .dz-wrap{margin-left:auto; margin-right:auto}
+  .lp-win{transform:none}
+}
+
+/* trust band */
+.lp-trust{border-bottom:1px solid var(--line); background:var(--inset)}
+.lp-trust-in{max-width:1120px; margin:0 auto; padding:15px 24px; display:flex; flex-wrap:wrap;
+  gap:10px 40px; align-items:center; justify-content:center}
+.lp-trust .it{display:flex; align-items:baseline; gap:9px}
+.lp-trust .n{font-size:19px; font-weight:600; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+.lp-trust .n u{text-decoration:none; color:var(--brand)}
+.lp-trust .k{font:500 11px/1 var(--mono); letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+.lp-trust .dot{width:4px; height:4px; border-radius:50%; background:var(--line-2); flex:none}
+@media (max-width:640px){.lp-trust .dot{display:none} .lp-trust-in{gap:12px 26px}}
+
+/* feature mini-previews */
+.lp-feats{max-width:1120px; margin:0 auto; padding:62px 24px 20px}
+.lp-feats-head{text-align:center; margin-bottom:32px; display:flex; flex-direction:column; align-items:center}
+.lp-feats-head h2{font-size:clamp(23px,3vw,29px); letter-spacing:-.03em; margin-top:14px}
+.lp-feats-head p{color:var(--ink-2); font-size:14.5px; margin:9px auto 0; max-width:56ch; line-height:1.6}
+.lp-fgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+@media (max-width:900px){.lp-fgrid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.lp-fgrid{grid-template-columns:1fr}}
+.lp-fcard{position:relative; overflow:hidden; background:var(--panel); border:1px solid var(--line);
+  border-radius:10px; padding:16px; box-shadow:var(--sh-1);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease}
+.lp-fcard::before{content:""; position:absolute; left:0; top:0; height:3px; width:100%; background:var(--accent,var(--brand))}
+.lp-fcard:hover{transform:translateY(-3px); box-shadow:var(--sh-2); border-color:var(--line-2)}
+.lp-fcard h4{font-size:14px; margin:14px 0 5px}
+.lp-fcard p{font-size:12.5px; line-height:1.55; color:var(--ink-2)}
+.lp-fviz{height:74px; border-radius:var(--r); background:var(--inset); border:1px solid var(--line);
+  padding:10px; display:flex; flex-direction:column; justify-content:center; gap:6px; overflow:hidden}
+.lp-mbar{display:grid; grid-template-columns:52px 1fr; gap:7px; align-items:center}
+.lp-mbar .mk{font:400 9px/1 var(--mono); color:var(--ink-3); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.lp-mbar .mf{height:9px; border-radius:0 2px 2px 0; background:var(--accent)}
+.lp-mchips{display:flex; flex-wrap:wrap; gap:5px; align-content:center}
+.lp-mchip{font:500 10px/1.4 var(--sans); padding:3px 8px; border-radius:999px;
+  background:color-mix(in srgb,var(--accent) 14%,transparent); color:var(--accent);
+  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.lp-mfeed{display:flex; flex-direction:column; gap:6px}
+.lp-mfeed .q{display:flex; gap:6px; align-items:flex-start; font-size:10.5px; color:var(--ink-2); line-height:1.3}
+.lp-mfeed .q b{color:var(--accent); font-weight:700}
+
+/* scroll reveal (only when motion is welcome; otherwise content is visible by default).
+   Scoped to .lp-fcard and its .in state so the reveal timing never clobbers the
+   card's snappy hover transition once it has appeared. */
+@media (prefers-reduced-motion:no-preference){
+  /* Gated on html.js so the cards are only hidden when JS is present to reveal
+     them — no script (or a script error) leaves them plainly visible. */
+  .js .lp-fcard.lp-reveal{opacity:0; transform:translateY(14px);
+    transition:transform .45s ease, box-shadow .16s ease, border-color .16s ease, opacity .45s ease}
+  .js .lp-fcard.lp-reveal.in{opacity:1; transform:none;
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease, opacity .45s ease}
+}
+
+/* how-to: WhatsApp-green pills so the steps match the app people are looking at */
+.wa{color:#0a2b16; background:#25d366; padding:1px 7px; border-radius:4px; font-weight:600; white-space:nowrap}
 </style>
 
 
@@ -705,78 +842,281 @@ table a:hover{text-decoration:underline}
 
 <!-- ================= LANDING ================= -->
 <div id="intake">
-  <div class="hero">
-    <span class="pill-tag"><i></i>Runs entirely in your browser</span>
-    <h1>Understand what's really happening in your WhatsApp groups.</h1>
-    <p class="lede">
-      Export a WhatsApp group, drop the file in, and Tzippy reports the links
-      being shared, the tools people actually use, who is building what, and
-      the questions that never got answered.
-    </p>
+  <div class="lp-hero-wrap">
+    <div class="lp-glow" aria-hidden="true"></div>
+    <div class="lp-hero">
+      <div class="lp-cta">
+        <span class="lp-eyebrow"><i></i>Runs entirely in your browser</span>
+        <h1 class="lp-h1">Understand what's <span class="hl">really happening</span> in your WhatsApp groups.</h1>
+        <p class="lede lp-lede">
+          Export a group, drop the file in, and Tzippy reports the links being
+          shared, the tools people actually use, who's building what, and the
+          questions that never got answered.
+        </p>
+
+        <div class="dz-wrap">
+          <button id="drop" aria-describedby="dzhint">
+            <span class="ic" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13V3M10 3L6.5 6.5M10 3l3.5 3.5"/>
+                <path d="M3 12.5V15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.5"/>
+              </svg>
+            </span>
+            <span class="t1">Drop your WhatsApp export here</span>
+            <span class="t2">or click to choose a file</span>
+            <span class="t3" id="dzhint">.txt or .zip</span>
+          </button>
+
+          <div class="dz-under">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="7" width="10" height="6.5" rx="1.5"/>
+              <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>
+            </svg>
+            <span>Analyzed locally &mdash; your chat never leaves this device.</span>
+          </div>
+
+          <div class="dz-alt">
+            <button class="linkbtn" id="demo">Explore a live demo with sample data &rarr;</button>
+          </div>
+
+          <div id="err" hidden></div>
+        </div>
+      </div>
+
+      <!-- Signature: a framed slice of a real report. Sample (invented) data. -->
+      <div class="lp-preview" aria-hidden="true">
+        <div class="lp-win">
+          <div class="lp-winbar">
+            <i></i><i></i><i></i>
+            <span class="u">tzippy &middot; Builders &amp; Founders &mdash; 43 people &middot; 18 weeks</span>
+          </div>
+          <div class="lp-winbody">
+            <div class="lp-ptiles">
+              <div class="lp-ptile"><div class="v">12,847</div><div class="l">Messages</div></div>
+              <div class="lp-ptile"><div class="v">386</div><div class="l">Links</div></div>
+              <div class="lp-ptile"><div class="v">57</div><div class="l">Tools</div></div>
+              <div class="lp-ptile"><div class="v">71</div><div class="l">Open Qs</div></div>
+            </div>
+            <p class="lp-plabel">Activity &mdash; busiest hours by day</p>
+            <div class="lp-heat">
+          <div class="d">M</div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l1"></div>
+          <div class="c l2"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="d"></div>
+          <div class="c l4"></div>
+          <div class="c l3"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l1"></div>
+          <div class="c l2"></div>
+          <div class="c l2"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="d">W</div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l2"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="d"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l2"></div>
+          <div class="c l4"></div>
+          <div class="c l4"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="d">F</div>
+          <div class="c l2"></div>
+          <div class="c l4"></div>
+          <div class="c l3"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l2"></div>
+          <div class="c l3"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="d"></div>
+          <div class="c l1"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="d"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l2"></div>
+          <div class="c l1"></div>
+          <div class="c l1"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+          <div class="c l0"></div>
+            </div>
+            <div class="lp-psplit">
+              <div>
+                <p class="lp-plabel">Messages over time</p>
+                <svg class="lp-pspark" viewBox="0 0 240 52" preserveAspectRatio="none">
+                  <defs><linearGradient id="lp-ga" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="var(--brand)" stop-opacity=".28"/>
+                    <stop offset="1" stop-color="var(--brand)" stop-opacity="0"/></linearGradient></defs>
+                  <path d="M0,42 L14,38 28,40 42,30 56,33 70,22 84,26 98,17 112,24 126,12 140,18 154,9 168,15 182,7 196,13 210,6 224,11 240,5 L240,52 L0,52 Z" fill="url(#lp-ga)"/>
+                  <path d="M0,42 L14,38 28,40 42,30 56,33 70,22 84,26 98,17 112,24 126,12 140,18 154,9 168,15 182,7 196,13 210,6 224,11 240,5" fill="none" stroke="var(--brand)" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <p class="lp-plabel">Most active</p>
+                <div class="lp-plead"><span class="rk">1</span><span class="lp-pav" style="background:var(--s1)">DA</span><span class="nm">Dana A.</span><span class="vl">1,204</span></div>
+                <div class="lp-plead"><span class="rk">2</span><span class="lp-pav" style="background:var(--s5)">RK</span><span class="nm">Roi K.</span><span class="vl">986</span></div>
+                <div class="lp-plead"><span class="rk">3</span><span class="lp-pav" style="background:var(--s4)">ML</span><span class="nm">Maya L.</span><span class="vl">742</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="dz-wrap">
-    <button id="drop" aria-describedby="dzhint">
-      <span class="ic" aria-hidden="true">
-        <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10 13V3M10 3L6.5 6.5M10 3l3.5 3.5"/>
-          <path d="M3 12.5V15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.5"/>
-        </svg>
-      </span>
-      <span class="t1">Drop your WhatsApp export here</span>
-      <span class="t2">or click to choose a file</span>
-      <span class="t3" id="dzhint">.txt or .zip</span>
-    </button>
-
-    <div class="dz-under">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-           stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="3" y="7" width="10" height="6.5" rx="1.5"/>
-        <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>
-      </svg>
-      <span>Your chat is analyzed locally and never leaves this device.</span>
+  <div class="lp-trust">
+    <div class="lp-trust-in">
+      <div class="it"><span class="n"><span class="cv" data-to="100">100</span><u>%</u></span><span class="k">Local</span></div>
+      <span class="dot"></span>
+      <div class="it"><span class="n"><span class="cv" data-to="0">0</span></span><span class="k">Bytes uploaded</span></div>
+      <span class="dot"></span>
+      <div class="it"><span class="n">~<span class="cv" data-to="40">40</span><u>k</u></span><span class="k">Messages / run</span></div>
+      <span class="dot"></span>
+      <div class="it"><span class="n">&lt;<span class="cv" data-to="5">5</span><u>s</u></span><span class="k">To first insight</span></div>
     </div>
-
-    <div class="dz-alt">
-      <button class="linkbtn" id="demo">Explore a live demo with sample data</button>
-    </div>
-
-    <div id="err" hidden></div>
   </div>
 
-  <div class="feats">
-    <div class="feat">
-      <div class="fi" aria-hidden="true">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-             stroke-width="1.6" stroke-linecap="round"><path d="M6.5 9.5a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-.6.6"/><path d="M9.5 6.5a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2l.6-.6"/></svg>
-      </div>
-      <h4>Shared links</h4>
-      <p>Every URL, grouped by domain and type, with the conversation around it.</p>
+  <div class="lp-feats">
+    <div class="lp-feats-head">
+      <span class="lp-eyebrow"><i></i>What comes out</span>
+      <h2>Four reports, one dropped file.</h2>
+      <p>Every panel below is a real slice of the output &mdash; not a promise of one.</p>
     </div>
-    <div class="feat">
-      <div class="fi" aria-hidden="true">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V7M6.5 12.5V3.5M10.5 12.5V9M14 12.5v-6"/></svg>
+    <div class="lp-fgrid">
+      <div class="lp-fcard lp-reveal" style="--accent:var(--s1)">
+        <div class="lp-fviz" aria-hidden="true">
+          <div class="lp-mbar"><span class="mk">github.com</span><span class="mf" style="width:92%"></span></div>
+          <div class="lp-mbar"><span class="mk">x.com</span><span class="mf" style="width:64%"></span></div>
+          <div class="lp-mbar"><span class="mk">youtube</span><span class="mf" style="width:41%"></span></div>
+        </div>
+        <h4>Shared links</h4>
+        <p>Every URL, grouped by domain and type, with the conversation around it.</p>
       </div>
-      <h4>Tool adoption</h4>
-      <p>What the group uses, ranked by mentions and by how many people mention it.</p>
-    </div>
-    <div class="feat">
-      <div class="fi" aria-hidden="true">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.5l1.7 3.6 3.8.5-2.8 2.7.7 3.9L8 11.3l-3.4 1.9.7-3.9L2.5 6.6l3.8-.5z"/></svg>
+      <div class="lp-fcard lp-reveal" style="--accent:var(--s5)">
+        <div class="lp-fviz" aria-hidden="true">
+          <div class="lp-mbar"><span class="mk">Cursor</span><span class="mf" style="width:88%"></span></div>
+          <div class="lp-mbar"><span class="mk">Claude</span><span class="mf" style="width:73%"></span></div>
+          <div class="lp-mbar"><span class="mk">Figma</span><span class="mf" style="width:45%"></span></div>
+        </div>
+        <h4>Tool adoption</h4>
+        <p>What the group uses, ranked by mentions and by how many people mention it.</p>
       </div>
-      <h4>Builder signals</h4>
-      <p>Who is shipping, hiring, seeking feedback or asking for help.</p>
-    </div>
-    <div class="feat">
-      <div class="fi" aria-hidden="true">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 9.5a1.5 1.5 0 0 1-1.5 1.5H5l-3 2.5V3.5A1.5 1.5 0 0 1 3.5 2H12a1.5 1.5 0 0 1 1.5 1.5z"/></svg>
+      <div class="lp-fcard lp-reveal" style="--accent:var(--s7)">
+        <div class="lp-fviz" aria-hidden="true">
+          <div class="lp-mchips">
+            <span class="lp-mchip">shipping</span><span class="lp-mchip">hiring</span>
+            <span class="lp-mchip">feedback</span><span class="lp-mchip">launched</span><span class="lp-mchip">help</span>
+          </div>
+        </div>
+        <h4>Builder signals</h4>
+        <p>Who's shipping, hiring, seeking feedback or asking for help.</p>
       </div>
-      <h4>Unanswered questions</h4>
-      <p>The gaps a busy group left open, surfaced instead of buried.</p>
+      <div class="lp-fcard lp-reveal" style="--accent:var(--s4)">
+        <div class="lp-fviz" aria-hidden="true">
+          <div class="lp-mfeed">
+            <div class="q"><b>Q</b><span>Anyone self-hosted Supabase on Fly?</span></div>
+            <div class="q"><b>Q</b><span>Best way to export 40k msgs?</span></div>
+            <div class="q"><b>Q</b><span>Who's using Bun in prod?</span></div>
+          </div>
+        </div>
+        <h4>Unanswered questions</h4>
+        <p>The gaps a busy group left open, surfaced instead of buried.</p>
+      </div>
     </div>
   </div>
 
@@ -785,7 +1125,7 @@ table a:hover{text-decoration:underline}
       <h3>Getting your export from WhatsApp</h3>
       <ol class="steps">
         <li><span class="n">1</span>Open the group in WhatsApp and tap the group name.</li>
-        <li><span class="n">2</span>Choose <b>Export Chat</b>, then <b>Without Media</b>.</li>
+        <li><span class="n">2</span>Choose <span class="wa">Export Chat</span>, then <span class="wa">Without Media</span>.</li>
         <li><span class="n">3</span>Save the <code>.txt</code> or <code>.zip</code> and drop it above.</li>
       </ol>
       <p class="howto-note">
@@ -2535,4 +2875,52 @@ async function routeShareLink(){
 }
 window.addEventListener("hashchange",routeShareLink);
 routeShareLink();
+
+/* ---- Landing polish: scroll-reveal for feature cards + count-up for the
+   trust band. Pure progressive enhancement — the final values are already
+   in the HTML, so nothing depends on this running. Reduced motion is
+   honoured (no counting, no fade). ---- */
+(function(){
+  const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const io="IntersectionObserver" in window;
+  // Only now do we let CSS hide the cards for the reveal — guarantees they are
+  // visible if this script never runs.
+  document.documentElement.classList.add("js");
+
+  const cards=[...document.querySelectorAll(".lp-fcard.lp-reveal")];
+  // Safety net: whatever happens with the observer, never leave a card hidden.
+  const failSafe=setTimeout(()=>cards.forEach(c=>c.classList.add("in")),1600);
+  if(reduce||!io){ clearTimeout(failSafe); cards.forEach(c=>c.classList.add("in")); }
+  else{
+    const ro=new IntersectionObserver((es,o)=>{
+      es.forEach(e=>{
+        if(!e.isIntersecting) return;
+        const c=e.target; c.classList.add("in"); o.unobserve(c);
+        // Drop the stagger delay once revealed so hover stays snappy.
+        setTimeout(()=>{ c.style.transitionDelay=""; },600);
+      });
+    },{rootMargin:"0px 0px -8% 0px"});
+    cards.forEach((c,i)=>{ c.style.transitionDelay=(i*60)+"ms"; ro.observe(c); });
+  }
+
+  const nums=[...document.querySelectorAll(".lp-trust .cv[data-to]")];
+  const countUp=el=>{
+    const to=+el.dataset.to;
+    if(reduce||to===0){ el.textContent=to; return; }
+    const dur=900, t0=performance.now();
+    const step=now=>{
+      const p=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-p,3);
+      el.textContent=Math.round(to*e);
+      if(p<1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  const band=document.querySelector(".lp-trust");
+  if(band&&io&&!reduce){
+    const bo=new IntersectionObserver((es,o)=>{
+      es.forEach(e=>{ if(e.isIntersecting){ nums.forEach(countUp); o.disconnect(); } });
+    },{threshold:.4});
+    bo.observe(band);
+  }
+})();
 </script>
