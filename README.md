@@ -7,6 +7,10 @@ actually use, who is building what, and the questions that never got answered.
 
 → **[Open Tzippy](https://myrondoesnotcode.github.io/whatsapp/)**
 
+[![Tzippy — drop in a WhatsApp export and see the links, tools, builders and unanswered questions inside it](docs/hero.png)](https://myrondoesnotcode.github.io/whatsapp/)
+
+<sub>The report preview above uses synthetic sample data — no real chat. Try it on your own group with the live demo, no export needed.</sub>
+
 Not affiliated with or endorsed by WhatsApp or Meta. This reads export files you
 produce yourself.
 
